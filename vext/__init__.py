@@ -74,18 +74,22 @@ def find_dlls(dlls, search_path=None):
 
 def _parse_spec(spec):    
     _spec = dict(**spec)
-    dlls = spec.get('dlls', [])        
+    dlls = spec.get('dlls', [])
+    if isinstance(dlls, basestring):
+        dlls = [dlls]
+
     if dlls:
-        if isinstance(dlls, basestring):
-            dlls = [dlls]
         search_path = syspy_info()['path']
         _spec.setdefault('paths', [])
-        _spec['paths'].extend( find_dlls(dlls, search_path) )
+        #_spec['paths'].extend( find_dlls(dlls, search_path) )        
         
     return _spec
 
 
 def load_spec(path):
+    """
+    Load and parse .vext spec for external library
+    """
     with open(path) as f:
         data = yaml.load(f)
         return _parse_spec(data)
@@ -101,7 +105,15 @@ def load_vext_specs():
         spec = load_spec(spec_file)
 
         _module = spec['module']
-        specs[_module] = spec        
+        specs[_module] = spec
+
+        # An alias is an alternate name for the module
+        aliases = spec.get('aliases', [])
+        if isinstance(aliases, basestring):
+            aliases = [ aliases ]
+
+        for alias in aliases:
+            specs[alias] = _spec
 
     return specs
 
@@ -166,6 +178,7 @@ class VextImporter(object):
         # Add the PATH from the system python
         env_path = '' + os.environ['PATH']
         env_path += os.pathsep + os.pathsep.join(syspy_info()['path'])
+        env_path += os.pathsep.join(spec.get('paths', []))
 
         sys.path.extend( syspy_info()['sys.path'] )
         os.environ['PATH'] = env_path
