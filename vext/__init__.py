@@ -107,14 +107,6 @@ def load_vext_specs():
         _module = spec['module']
         specs[_module] = spec
 
-        # An alias is an alternate name for the module
-        aliases = spec.get('aliases', [])
-        if isinstance(aliases, basestring):
-            aliases = [ aliases ]
-
-        for alias in aliases:
-            specs[alias] = _spec
-
     return specs
 
 
