@@ -1,8 +1,21 @@
+import glob
+import imp
 import json
 import logging
 import os
+import yaml
 import sys
 import subprocess
+
+here = os.path.abspath(os.path.dirname(__file__))
+spec_dir = os.path.join(here, 'specs')
+spec_files = list(glob.glob(os.path.join(spec_dir, '*.vext')))
+
+"""
+Custom module loader to allow external modules to be loaded from a virtualenv.
+
+Only modules specified in spec files '.vext' are allowed.
+"""
 
 # Utility functions
 def memoize(f):
@@ -24,6 +37,9 @@ def syspy_home():
 def syspy_info():
     """
     :return: dict of system python $PATH and sys.path
+
+    >>> syspy_info()
+    { u'path': ['C:\\Program Files\\... '], u'sys.path': ['C:\\temp...'] }
     """
     env = os.environ # TODO 
     python = os.path.join(syspy_home(), 'python')
@@ -38,6 +54,60 @@ def syspy_info():
     output = subprocess.check_output(cmd, env=env).decode('utf-8').splitlines()[0]
     return json.loads(output)
 
+
+def find_dlls(dlls, search_path=None):
+    '''
+    Search OS path for dlls
+    :param dlls: List of dlls to search for (without extensions)
+    :yield: dll, path
+    '''
+    paths = set()
+    if search_path is None:
+        search_path = os.environ.get('PATH', "").split(os.pathsep)
+    for d in search_path:
+        for name in dlls:
+            fullpath = os.path.join(d, name + '.dll')
+            if os.path.exists(fullpath):
+                paths.add(d)
+    return list(paths)
+
+
+def _parse_spec(spec):    
+    _spec = dict(**spec)
+    dlls = spec.get('dlls', [])        
+    if dlls:
+        if isinstance(dlls, basestring):
+            dlls = [dlls]
+        search_path = syspy_info()['path']
+        _spec.setdefault('paths', [])
+        _spec['paths'].extend( find_dlls(dlls, search_path) )
+        
+    return _spec
+
+
+def load_spec(path):
+    with open(path) as f:
+        data = yaml.load(f)
+        return _parse_spec(data)
+
+def load_vext_specs():
+    """
+    Load spec files
+    """
+    global spec_path
+
+    specs = {}
+    for spec_file in spec_files:
+        spec = load_spec(spec_file)
+
+        _module = spec['module']
+        specs[_module] = spec        
+
+    return specs
+
+
+
+
 # vext importer.
 #
 # If a module is specified in a .vext file then attempt to import it from the
@@ -50,6 +120,7 @@ class VextImporter(object):
 
     hook = None
     modules = {}
+    specs = load_vext_specs()
 
     def __init__(self, *args):
         pass
@@ -60,63 +131,65 @@ class VextImporter(object):
             cls.hook = VextImporter()
         return cls.hook
 
-    def find_spec(self, fullname):
-        pass
- 
     def find_module(self, fullname, path=None):
-        #specs = spec_files()
-
-        logging.warning('find_module %s' % fullname)
-        #if fullname in AllowExternal.modules:
-        #   return AllowExternal.modules[fullname]
-        #else:
-
-        name = fullname.split('.')[0]
-        spec_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name + '.yml')
-        if os.path.exists(spec_path):
-            # - parse the spec and get the module
-            logging.warning('%s > %s' % (fullname, name))
-            AllowExternal.modules[fullname] = spec_path
-
+        """
+        If there is a .vext spec file then can be handled by
+        this module.
+        """
+        base_module, _, _ = fullname.partition('.')
+        spec = self.specs.get(base_module)
+        if spec:
             return self
-            # TODO
         else:
-            logging.warning('%s doesnt exist' % fullname)
+            # No spec file, nothing we can handle
             return None
  
-    def load_module(self, name):
-        logging.warning('load_module %s' % name)
-        if name in sys.modules:
-            logging.warning("return sys_module %s" % name)
+    def load_module(self, fullname):
+        """
 
-        # TODO here:    
-        spec_path = AllowExternal.modules.get(name)
-        if not spec_path:
-            logging.warning('no spec %s' % fullname)
+        """
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+
+        base_module, _, _ = fullname.partition('.')
+        spec = self.specs.get(base_module)
+
+        if not spec:
+            # Somehow no spec for this module
+            logging.warning('No .vext spec for module %s' % fullname)
             return
-        else:
-            logging.warning('got spec %s ' % spec_path)
 
-        sys.path.extend(['C:\\tools\\python2\\Lib\\site-packages', 'C:\\tools\\python2\\Lib\\site-packages\\cairo'])
-        # pth = sys.path
-        # if name != 'cairo._cairo':
-        #     logging.warning("load sys module")
-        #     #pth = ''
-        #     #sys.path.extend(['C:\\tools\\python2\\Lib\\site-packages', 'C:\\tools\\python2\\Lib\\site-packages\\cairo', 'C:\\tools\\python2\\Lib\\site-packages\\cairo\\_cairo.pyd'])
-        #     module_info = imp.find_module(name, sys.path)
-        #     module = imp.load_module(name, *module_info)
-        # else:
-        #     logging.warning("do something special")
-        #     fullpath = 'C:\\tools\\python2\\Lib\\site-packages\\cairo\\_cairo.pyd'
-        #     f = open(fullpath, 'r')
-        #     module = imp.load_module(
-        #         'cairo._cairo',
-        #         f, 
-        #         fullpath,
-        #         ('.pyd', 'rb', 3))
-        sys.modules[name] = module
+        # Save sys.path and $PATH
+        _sys_path = sys.path
+        _path = str(os.environ.get('PATH'))
 
-        logging.warning("Herp derp " + name)
+        # Add the PATH from the system python
+        env_path = '' + os.environ['PATH']
+        env_path += os.pathsep + os.pathsep.join(syspy_info()['path'])
+
+        sys.path.extend( syspy_info()['sys.path'] )
+        os.environ['PATH'] = env_path
+
+        # given a name like cairo._cairo
+        # find the file and directory it is in
+        module, _, name = fullname.rpartition('.')
+        subdir = module.replace('.', os.sep)
+
+        # Find the module in sitepackages
+        # TODO - Search other dirs in pythonpath ?
+        p = os.path.join(syspy_info()['sitepackages'], subdir)
+        module_info = imp.find_module(name, [p])
+        try:
+            module = imp.load_module(fullname, *module_info) # name
+        except:
+            raise
+
+        # restore PATH and sys.path
+        os.environ['PATH'] = _path
+        sys.path = _sys_path
+
+
+        sys.modules[fullname] = module
         return module
 
 
@@ -138,4 +211,7 @@ def main():
 #    main()
 
 logging.warning('name:' + __name__)
-install_importer()
+try:
+    install_importer()
+except:
+    logging.warning("ERROR")

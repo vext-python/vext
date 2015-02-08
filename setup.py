@@ -37,7 +37,7 @@ class VextInstallLib(install_lib.install_lib):
             except:            
                 pass
             return []
-        return install_lib.install_lib.install(self) 
+        return install_lib.install_lib.install(self)
 
 
 setup(

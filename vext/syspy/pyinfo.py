@@ -8,13 +8,16 @@ import json
 import os
 import sys
 
+from distutils.sysconfig import get_python_lib
+
 """
 Return paths from the system python
 """
 def py_info():
     data = { 
         "path": os.environ['PATH'].split(os.pathsep),
-        "sys.path": sys.path
+        "sys.path": sys.path,
+        "sitepackages": get_python_lib()
     }
     return data
 
