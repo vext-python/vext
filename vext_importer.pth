@@ -1,0 +1,2 @@
+import vext
+vext.install_importer()
