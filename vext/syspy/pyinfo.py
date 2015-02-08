@@ -13,7 +13,7 @@ Return paths from the system python
 """
 def py_info():
     data = { 
-        "path": os.environ['PATH'],
+        "path": os.environ['PATH'].split(os.pathsep),
         "sys.path": sys.path
     }
     return data
