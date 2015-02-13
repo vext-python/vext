@@ -8,7 +8,7 @@ import subprocess
 import sys
 import yaml
 
-VIRTUAL_ENV=os.environ.get('VIRTUAL_ENV')
+VIRTUAL_ENV=os.path.abspath(os.environ.get('VIRTUAL_ENV'))
 allowed_modules = set()
 added_dirs = set()
 _syssitepackages = None
@@ -16,10 +16,12 @@ _syssitepackages = None
 def findsyspy():
     """
     :return: First python in PATH outside of virtualenv
-    """        
+    """
+    python = os.path.basename(sys.executable)
     for p in os.environ['PATH'].split(os.pathsep):
-        if not p.startswith(VIRTUAL_ENV) and\
-            os.path.isfile(os.path.join(p, 'python')):
+        if p and \
+            not p.startswith(VIRTUAL_ENV) and\
+            os.path.isfile(os.path.join(p, python)):
             return p
 
 def getsyssitepackages(syspy_home=None):
@@ -30,7 +32,7 @@ def getsyssitepackages(syspy_home=None):
     if not _syssitepackages:
         syspy_home = syspy_home or findsyspy()
         env = os.environ
-        python = os.path.join(syspy_home, 'python')
+        python = os.path.join(syspy_home, os.path.basename(sys.executable))
         code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
         cmd = [python, '-c', code]
 
