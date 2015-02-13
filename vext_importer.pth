@@ -1,3 +1,2 @@
-import vext
-print 'vext importer'
-vext.install_importer()
+# Install the vext importer
+import vext; vext.install_importer()

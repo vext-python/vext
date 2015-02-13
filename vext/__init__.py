@@ -189,14 +189,13 @@ def install_importer():
     modules can be imported from system site-packages and
     install path hook.
     """
+    logging.warning('install_importer')
     if not os.environ.get('VIRTUAL_ENV'):
         logging.warning('No virtualenv')
         return False
-    load_specs()
-    sys.path.append(GatekeeperFinder.PATH_TRIGGER)
-    sys.path_hooks.append(GatekeeperFinder)
-    return True
 
-if __name__ == '__main__':
-    init_vext()
-
+    if GatekeeperFinder.PATH_TRIGGER not in sys.path:
+        load_specs()
+        sys.path.append(GatekeeperFinder.PATH_TRIGGER)
+        sys.path_hooks.append(GatekeeperFinder)
+        return True
