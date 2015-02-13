@@ -8,10 +8,19 @@ import subprocess
 import sys
 import yaml
 
-SYSPY_HOME=os.environ.get('_OLD_VIRTUAL_PYTHONHOME')
+VIRTUAL_ENV=os.environ.get('VIRTUAL_ENV')
 allowed_modules = set()
 added_dirs = set()
 _syssitepackages = None
+
+def findsyspy():
+    """
+    :return: First python in PATH outside of virtualenv
+    """        
+    for p in os.environ['PATH'].split(os.pathsep):
+        if not p.startswith(VIRTUAL_ENV) and\
+            os.path.isfile(os.path.join(p, 'python')):
+            return p
 
 def getsyssitepackages(syspy_home=None):
     """
@@ -19,9 +28,9 @@ def getsyssitepackages(syspy_home=None):
     """
     global _syssitepackages
     if not _syssitepackages:
-        syspy_home = syspy_home or SYSPY_HOME
+        syspy_home = syspy_home or findsyspy()
         env = os.environ
-        python = os.path.join(SYSPY_HOME, 'python')
+        python = os.path.join(syspy_home, 'python')
         code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
         cmd = [python, '-c', code]
 
@@ -176,8 +185,9 @@ def load_specs():
             for module in spec['modules']:
                 allowed_modules.add(module)
 
-            for pth in spec['pths'] or []:
+            for pth in [ pth for pth in spec['pths'] or [] if pth]:
                 addpackage(getsyssitepackages(), pth, added_dirs)
+                init_path() # TODO
 
         except Exception as e:
             logging.warning('error loading spec %s: %s' % (fn, e))

@@ -5,6 +5,10 @@
 modules:
     gtk
     pygtk
+    glib
+    gobject
+
+# move glib and gobject to their own vexts
 
 # pygtk.pth does most of the initialisation of pygtk
 pths:
