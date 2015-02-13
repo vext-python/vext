@@ -185,8 +185,9 @@ def load_specs():
             for module in spec['modules']:
                 allowed_modules.add(module)
 
+            sitedir = getsyssitepackages()
             for pth in [ pth for pth in spec['pths'] or [] if pth]:
-                addpackage(getsyssitepackages(), pth, added_dirs)
+                addpackage(sitedir, os.path.join(sitedir, pth), added_dirs)
                 init_path() # TODO
 
         except Exception as e:
