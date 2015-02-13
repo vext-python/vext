@@ -1,2 +1,3 @@
 import vext
+print 'vext importer'
 vext.install_importer()

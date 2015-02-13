@@ -1,222 +1,202 @@
+import collections
 import glob
 import imp
-import json
 import logging
 import os
-import yaml
-import sys
+import site
 import subprocess
+import sys
+import yaml
 
-here = os.path.abspath(os.path.dirname(__file__))
-spec_dir = os.path.join(here, 'specs')
-spec_files = list(glob.glob(os.path.join(spec_dir, '*.vext')))
+SYSPY_HOME=os.environ.get('_OLD_VIRTUAL_PYTHONHOME')
+allowed_modules = set()
+added_dirs = set()
+_syssitepackages = None
 
-"""
-Custom module loader to allow external modules to be loaded from a virtualenv.
+def getsyssitepackages(syspy_home=None):
+    """
+    Get site-packages from system python
+    """
+    global _syssitepackages
+    if not _syssitepackages:
+        syspy_home = syspy_home or SYSPY_HOME
+        env = os.environ
+        python = os.path.join(SYSPY_HOME, 'python')
+        code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
+        cmd = [python, '-c', code]
 
-Only modules specified in spec files '.vext' are allowed.
-"""
+        _syssitepackages = subprocess.check_output(cmd, env=env).decode('utf-8').splitlines()[0]
+    return _syssitepackages
 
-# Utility functions
-def memoize(f):
-    memo = {}
-    def wrapper(*args):
-        if args in memo:
-            return memo[args]
+
+class GateKeeperLoader(object):
+    """
+    Only allow known modules to import from the system site packages
+    """
+    def __init__(self, module_info):
+        self.module_info = module_info
+
+    def load_module(self, name):
+        """
+        Only lets modules in allowed_modules be loaded, others
+        will get an ImportError
+        """
+        # Get the name relative to SITEDIR .. 
+        filepath = self.module_info[1]
+        fullname = os.path.splitext(\
+            os.path.relpath(filepath, getsyssitepackages())\
+            )[0].replace(os.sep, '.')
+
+        basename = fullname.split('.')[0]
+        if basename not in allowed_modules:
+            raise ImportError("Install library that provides module '%s' to virtualenv or add module to Vext.allowed_modules" % basename)
+
+        if not name in sys.modules:
+            module = imp.load_module(fullname, *self.module_info)
+            sys.modules[fullname] = module
+
+        return sys.modules[fullname]
+
+
+class GatekeeperFinder(object):
+    """
+    Only allow known modules to import from the system site packages
+    """
+    PATH_TRIGGER = 'VextFinder.PATH_TRIGGER'
+
+    def __init__(self, path_entry):
+        global added_dirs
+        self.path_entry = path_entry
+
+        sitedir = getsyssitepackages()
+        if path_entry == sitedir:
+            return None
+
+        if path_entry.startswith(sitedir):
+            for p in added_dirs:
+                if path_entry.startswith(p):
+                    raise ImportError()
+            for m in allowed_modules:
+                if path_entry == os.path.join(sitedir, m):
+                    raise ImportError()
+
+            logging.warning("Install library that provides module '%s' to virtualenv or add module to Vext.allowed_modules" % fullname)
+            return None
+
+        if path_entry == GatekeeperFinder.PATH_TRIGGER:
+            # Activate this finder for special paths
+            return None
         else:
-            rv = f(*args)
-            memo[args] = rv
-            return rv
-    return wrapper
-
-@memoize
-def syspy_home():
-    return os.environ.get('_OLD_VIRTUAL_PYTHONHOME')
-
-@memoize
-def syspy_info():
-    """
-    :return: dict of system python $PATH and sys.path
-
-    >>> syspy_info()
-    { u'path': ['C:\\Program Files\\... '], u'sys.path': ['C:\\temp...'] }
-    """
-    env = os.environ # TODO 
-    python = os.path.join(syspy_home(), 'python')
-    pyinfo = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        'syspy',
-        'pyinfo.py'
-        )
-
-    cmd = [python, [pyinfo]]
-
-    output = subprocess.check_output(cmd, env=env).decode('utf-8').splitlines()[0]
-    return json.loads(output)
-
-
-def find_dlls(dlls, search_path=None):
-    '''
-    Search OS path for dlls
-    :param dlls: List of dlls to search for (without extensions)
-    :yield: dll, path
-    '''
-    paths = set()
-    if search_path is None:
-        search_path = os.environ.get('PATH', "").split(os.pathsep)
-    for d in search_path:
-        for name in dlls:
-            fullpath = os.path.join(d, name + '.dll')
-            if os.path.exists(fullpath):
-                paths.add(d)
-    return list(paths)
-
-
-def _parse_spec(spec):    
-    _spec = dict(**spec)
-    dlls = spec.get('dlls', [])
-    if isinstance(dlls, basestring):
-        dlls = [dlls]
-
-    if dlls:
-        search_path = syspy_info()['path']
-        _spec.setdefault('paths', [])
-        #_spec['paths'].extend( find_dlls(dlls, search_path) )        
-        
-    return _spec
-
-
-def load_spec(path):
-    """
-    Load and parse .vext spec for external library
-    """
-    with open(path) as f:
-        data = yaml.load(f)
-        return _parse_spec(data)
-
-def load_vext_specs():
-    """
-    Load spec files
-    """
-    global spec_path
-
-    specs = {}
-    for spec_file in spec_files:
-        spec = load_spec(spec_file)
-
-        _module = spec['module']
-        specs[_module] = spec
-
-    return specs
-
-
-
-
-# vext importer.
-#
-# If a module is specified in a .vext file then attempt to import it from the
-# system python instead of the virtualenv.
-#
-class VextImporter(object):
-    """
-    Allow loading of external modules, if yaml spec file for them exists.
-    """
-
-    hook = None
-    modules = {}
-    specs = load_vext_specs()
-
-    def __init__(self, *args):
-        pass
-
-    @classmethod
-    def hook_inst(cls):
-        if not cls.hook:
-            cls.hook = VextImporter()
-        return cls.hook
+            raise ImportError()
 
     def find_module(self, fullname, path=None):
-        """
-        If there is a .vext spec file then can be handled by
-        this module.
-        """
-        base_module, _, _ = fullname.partition('.')
-        spec = self.specs.get(base_module)
-        if spec:
-            return self
-        else:
-            # No spec file, nothing we can handle
-            return None
- 
-    def load_module(self, fullname):
-        """
-
-        """
-        if fullname in sys.modules:
+        if fullname in sys.modules:            
             return sys.modules[fullname]
 
-        base_module, _, _ = fullname.partition('.')
-        spec = self.specs.get(base_module)
-
-        if not spec:
-            # Somehow no spec for this module
-            logging.warning('No .vext spec for module %s' % fullname)
-            return
-
-        # Save sys.path and $PATH
-        _sys_path = sys.path
-        _path = str(os.environ.get('PATH'))
-
-        # Add the PATH from the system python
-        env_path = '' + os.environ['PATH']
-        env_path += os.pathsep + os.pathsep.join(syspy_info()['path'])
-        env_path += os.pathsep.join(spec.get('paths', []))
-
-        sys.path.extend( syspy_info()['sys.path'] )
-        os.environ['PATH'] = env_path
-
-        # given a name like cairo._cairo
-        # find the file and directory it is in
-        module, _, name = fullname.rpartition('.')
-        subdir = module.replace('.', os.sep)
-
-        # Find the module in sitepackages
-        # TODO - Search other dirs in pythonpath ?
-        p = os.path.join(syspy_info()['sitepackages'], subdir)
-        module_info = imp.find_module(name, [p])
         try:
-            module = imp.load_module(fullname, *module_info) # name
-        except:
+            sitedir = getsyssitepackages()
+            module_info = imp.find_module(fullname, [sitedir, self.path_entry])
+            if module_info:
+                return GateKeeperLoader(module_info)
+
+            return None
+        except Exception as e:
             raise
 
-        # restore PATH and sys.path
-        os.environ['PATH'] = _path
-        sys.path = _sys_path
+def addpackage(sitedir, pthfile, known_dirs=None):
+    """
+    Wrapper for site.addpackage
+
+    Try and work out which directories are added by
+    the .pth and add them to the known_dirs set    
+    """
+    known_dirs = set(known_dirs or [])
+    with open(os.path.join(sitedir, pthfile)) as f:
+        for n, line in enumerate(f):
+            if line.startswith("#"):
+                continue
+            line = line.rstrip()
+            if line:
+                if line.startswith(("import ", "import\t")):
+                    exec line
+                    continue
+                else:
+                    p_rel = os.path.join(sitedir, line)
+                    p_abs = os.path.abspath(line)
+                    if os.path.isdir(p_rel):
+                        os.environ['PATH'] += os.pathsep + p_rel
+                        sys.path.append(p_rel)
+                        added_dirs.add(p_rel)
+                    elif os.path.isdir(p_abs):
+                        os.environ['PATH'] += os.pathsep + p_abs
+                        sys.path.append(p_abs)
+                        added_dirs.add(p_abs)
+
+    site.addpackage(sitedir, pthfile, known_dirs)
 
 
-        sys.modules[fullname] = module
-        return module
+def init_path():
+    sitedir = getsyssitepackages()
+    env_path = os.environ['PATH'].split(os.pathsep)
+    for module in allowed_modules:
+        p = os.path.join(sitedir, module)
+        if os.path.isdir(p) and not p in env_path:
+            os.environ['PATH'] += os.pathsep + p
 
+
+def open_spec(f):
+    """
+    :param f: file object with spec data
+
+    spec file is a yaml document that specifies which modules
+    can be loaded.
+
+    modules - list of base modules that can be loaded
+    pths    - list of .pth files to load
+    """
+    keys = ['modules', 'pths']
+    data = yaml.load(f)
+    parsed = dict()
+    for k in keys:
+        v = data.get(k, [])
+        # Items are always lists
+        if isinstance(v, basestring):
+            parsed[k] = v.split()
+        else:
+            parsed[k] = v
+
+    return parsed
+
+def load_specs():
+    global added_dirs
+    for fn in glob.glob(os.path.normpath('vext/specs/*.vext')):
+        try:
+            spec = open_spec(open(fn))
+
+            for module in spec['modules']:
+                allowed_modules.add(module)
+
+            for pth in spec['pths'] or []:
+                addpackage(getsyssitepackages(), pth, added_dirs)
+
+        except Exception as e:
+            logging.warning('error loading spec %s: %s' % (fn, e))
+            raise
 
 def install_importer():
     """
-    Install import hook.
+    If in a virtualenv then load spec files to decide which
+    modules can be imported from system site-packages and
+    install path hook.
     """
-    logging.warning("Install import hook.")
-    sys.meta_path = [VextImporter.hook_inst()]
+    if not os.environ.get('VIRTUAL_ENV'):
+        logging.warning('No virtualenv')
+        return False
+    load_specs()
+    sys.path.append(GatekeeperFinder.PATH_TRIGGER)
+    sys.path_hooks.append(GatekeeperFinder)
+    return True
 
-def main():
-    if 'VIRTUAL_ENV' in os.environ:
-        #print syspy_home()
-        logging.warning(syspy_info())
-    else:
-        logging.warning('Not running in virtualenv.')
+if __name__ == '__main__':
+    init_vext()
 
-#if __name__ == '__main__':
-#    main()
-
-logging.warning('name:' + __name__)
-try:
-    install_importer()
-except:
-    logging.warning("ERROR")

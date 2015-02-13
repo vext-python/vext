@@ -1,5 +1,1 @@
-module: cairo
-
-dlls:
-    # find any dlls specified here and add them to the %PATH%
-    libcairo-2
+modules: cairo

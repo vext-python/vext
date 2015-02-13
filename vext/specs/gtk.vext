@@ -1,1 +1,11 @@
-module: gtk
+# Pygtk vext
+#
+
+# Vext will check for the presence of this module
+modules:
+    gtk
+    pygtk
+
+# pygtk.pth does most of the initialisation of pygtk
+pths:
+    pygtk.pth
