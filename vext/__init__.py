@@ -7,10 +7,14 @@ import site
 import subprocess
 import sys
 import yaml
+import vext.registry
+
+from distutils.sysconfig import get_python_lib
 
 VIRTUAL_ENV=os.path.abspath(os.environ.get('VIRTUAL_ENV'))
-allowed_modules = set()
-added_dirs = set()
+
+allowed_modules=vext.registry.allowed_modules
+added_dirs = vext.registry.added_dirs
 _syssitepackages = None
 
 def findsyspy():
@@ -91,7 +95,6 @@ class GatekeeperFinder(object):
                 if path_entry == os.path.join(sitedir, m):
                     raise ImportError()
 
-            logging.warning("Install library that provides module '%s' to virtualenv or add module to Vext.allowed_modules" % fullname)
             return None
 
         if path_entry == GatekeeperFinder.PATH_TRIGGER:
@@ -180,7 +183,8 @@ def open_spec(f):
 
 def load_specs():
     global added_dirs
-    for fn in glob.glob(os.path.normpath('vext/specs/*.vext')):
+    sitedir=get_python_lib()
+    for fn in glob.glob(os.path.join(sitedir, os.path.normpath('vext/specs/*.vext'))):
         try:
             spec = open_spec(open(fn))
 
