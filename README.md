@@ -24,7 +24,6 @@ Available packages
 Use pip to install one of these packages
 
 * vext.pygtk
-* vext.py2cairo
 * vext.gi
 
 
