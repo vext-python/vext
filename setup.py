@@ -14,45 +14,14 @@ site_packages_path = sysconfig.get_python_lib()
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-class VextInstallLib(install_lib.install_lib):
-    """
-    Install / Uninstall .pth file which enables the import hook.
-    """
-    def install(self):
-        """
-        Add / remove the vext_importer.pth in site_packages
-        """
-        if 'install' in argv:
-            src=path.join(here, 'vext_importer.pth')
-            dest=path.join(site_packages_path, 'vext_importer.pth')
-            try:
-                copyfile(src, dest)
-            except:
-                pass
-            return install_lib.install_lib.install(self) 
-        if 'uninstall' in argv:
-            dest=path.join(site_packages_path, 'vext_importer.pth')
-            try:
-                unlink(dest)
-            except:            
-                pass
-            return []
-        return install_lib.install_lib.install(self)
-
 
 setup(
     name='vext',
 
-    # Customise actions
-    cmdclass={
-        'install_lib': VextInstallLib,
-        'uninstall': VextInstallLib 
-        },
-
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.2',
+    version='0.0.3',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
@@ -91,7 +60,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['vext'],
+    packages=['vext', 'vext.install'],
 
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed. For an analysis of "install_requires" vs pip's
@@ -99,33 +68,9 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=["pyyaml==3.11"],
 
-    # List additional groups of dependencies here (e.g. development dependencies).
-    # You can install these using the following syntax, for example:
-    # $ pip install -e .[dev,test]
-    #extras_require = {
-    #    'dev': ['check-manifest'],
-    #    'test': ['coverage'],
-    #},
-
-    # If there are data files included in your packages that need to be
-    # installed, specify them here.  If using Python 2.6 or less, then these
-    # have to be included in MANIFEST.in as well.
-    #package_data={
-    #    'sample': ['package_data.dat'],
-    #},
-
-    # Add the import hook
+    # Install the import hook    
     data_files=[
         (site_packages_path, ["vext_importer.pth"]),
-        (path.join(site_packages_path, 'vext/specs'), glob('vext/specs/*.vext'))
-        ],
+    ],
 
-    # To provide executable scripts, use entry points in preference to the
-    # "scripts" keyword. Entry points provide cross-platform support and allow
-    # pip to create the appropriate form of executable for the target platform.
-    #entry_points={
-    #    'console_scripts': [
-    #        'vext=vext:main',
-    #    ],
-    #},
 )
