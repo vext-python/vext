@@ -137,12 +137,12 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                 else:
                     p_rel = os.path.join(sitedir, line)
                     p_abs = os.path.abspath(line)
-                    if os.path.isdir(p_rel):
-                        os.environ['PATH'] += os.pathsep + p_rel
+                    if os.path.isdir(p_rel):                        
+                        os.environ['PATH'] += str(os.pathsep + p_rel) # str is for windows
                         sys.path.append(p_rel)
                         added_dirs.add(p_rel)
                     elif os.path.isdir(p_abs):
-                        os.environ['PATH'] += os.pathsep + p_abs
+                        os.environ['PATH'] += str(os.pathsep + p_abs) # str is for windows
                         sys.path.append(p_abs)
                         added_dirs.add(p_abs)
 
@@ -155,7 +155,7 @@ def init_path():
     for module in allowed_modules:
         p = os.path.join(sitedir, module)
         if os.path.isdir(p) and not p in env_path:
-            os.environ['PATH'] += os.pathsep + p
+            os.environ['PATH'] += str(os.pathsep + p) # str is for windows
 
 
 def open_spec(f):
