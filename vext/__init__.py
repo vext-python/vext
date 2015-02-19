@@ -17,6 +17,12 @@ allowed_modules=vext.registry.allowed_modules
 added_dirs = vext.registry.added_dirs
 _syssitepackages = None
 
+if os.name == 'nt':
+    # Windows needs environment variables + paths to be strings
+    env_t = str
+else:
+    env_t = unicode
+
 def findsyspy():
     """
     :return: First python in PATH outside of virtualenv
@@ -138,11 +144,11 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                     p_rel = os.path.join(sitedir, line)
                     p_abs = os.path.abspath(line)
                     if os.path.isdir(p_rel):                        
-                        os.environ['PATH'] += str(os.pathsep + p_rel) # str is for windows
+                        os.environ['PATH'] += env_t(os.pathsep + p_rel)
                         sys.path.append(p_rel)
                         added_dirs.add(p_rel)
                     elif os.path.isdir(p_abs):
-                        os.environ['PATH'] += str(os.pathsep + p_abs) # str is for windows
+                        os.environ['PATH'] += env_t(os.pathsep + p_abs)
                         sys.path.append(p_abs)
                         added_dirs.add(p_abs)
 
@@ -155,7 +161,7 @@ def init_path():
     for module in allowed_modules:
         p = os.path.join(sitedir, module)
         if os.path.isdir(p) and not p in env_path:
-            os.environ['PATH'] += str(os.pathsep + p) # str is for windows
+            os.environ['PATH'] += env_t(os.pathsep + p)
 
 
 def open_spec(f):
@@ -197,7 +203,7 @@ def load_specs():
                 init_path() # TODO
 
         except Exception as e:
-            logging.warning('error loading spec %s: %s' % (fn, e))
+            logging.error('error loading spec %s: %s' % (fn, e))
             raise
 
 def install_importer():
@@ -206,9 +212,9 @@ def install_importer():
     modules can be imported from system site-packages and
     install path hook.
     """
-    logging.warning('install_importer')
+    logging.debug('install_importer')
     if not os.environ.get('VIRTUAL_ENV'):
-        logging.warning('No virtualenv')
+        logging.warning('No virtualenv active')
         return False
 
     if GatekeeperFinder.PATH_TRIGGER not in sys.path:
