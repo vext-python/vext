@@ -6,7 +6,6 @@ import os
 import site
 import subprocess
 import sys
-import yaml
 import vext.registry
 
 from distutils.sysconfig import get_python_lib
@@ -175,6 +174,7 @@ def open_spec(f):
     modules - list of base modules that can be loaded
     pths    - list of .pth files to load
     """
+    import yaml
     keys = ['modules', 'pths']
     data = yaml.load(f)
     parsed = dict()
