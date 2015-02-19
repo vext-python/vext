@@ -13,6 +13,7 @@ from distutils.sysconfig import get_python_lib
 
 VIRTUAL_ENV=os.path.abspath(os.environ.get('VIRTUAL_ENV'))
 
+vext_pth=os.path.join(get_python_lib(), 'vext_importer.pth')
 allowed_modules=vext.registry.allowed_modules
 added_dirs = vext.registry.added_dirs
 _syssitepackages = None
@@ -187,19 +188,25 @@ def open_spec(f):
 
     return parsed
 
+def spec_files():
+    """
+    :return: Iterator over spec files.
+    """
+    sitedir=get_python_lib()
+    return glob.glob(os.path.join(sitedir, os.path.normpath('vext/specs/*.vext')))
+
 def load_specs():
     global added_dirs
-    sitedir=get_python_lib()
-    for fn in glob.glob(os.path.join(sitedir, os.path.normpath('vext/specs/*.vext'))):
+    for fn in spec_files():
         try:
             spec = open_spec(open(fn))
 
             for module in spec['modules']:
                 allowed_modules.add(module)
 
-            sitedir = getsyssitepackages()
+            sys_sitedir = getsyssitepackages()
             for pth in [ pth for pth in spec['pths'] or [] if pth]:
-                addpackage(sitedir, os.path.join(sitedir, pth), added_dirs)
+                addpackage(sys_sitedir, os.path.join(sys_sitedir, pth), added_dirs)
                 init_path() # TODO
 
         except Exception as e:

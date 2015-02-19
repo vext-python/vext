@@ -94,6 +94,25 @@ the idea is that an error will be thrown fairly early though
 if you are running Vext and try and import a module.
 
 
+Usage
+=====
+
+Mostly you will use vext just by installing a package like 'vext.pygtk'
+the commandline options allow you to get status and enable / disable
+Vext.
+
+```
+optional arguments:
+  -l, --list     List external packages "Vext"
+  -e, --enable   Disable Vext loader
+  -d, --disable  Enable Vext loader
+  -s, --status   Show Vext status
+```
+
+If Vext is causing an issue with other tools try disabling it,
+also feel free to send a bug report with any information and
+the output of ```vext -l```.
+
 Implementation
 ==============
 
