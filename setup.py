@@ -3,9 +3,11 @@ from setuptools import setup, find_packages  # Always prefer setuptools over dis
 from setuptools.command import install_lib
 from codecs import open  # To use a consistent encoding
 from os import environ, path, unlink
+from os import name as os_name
 from glob import glob
 from shutil import copyfile
 from sys import argv
+from sys import path as sys_path
 
 here = path.abspath(path.dirname(__file__))
 site_packages_path = sysconfig.get_python_lib()
@@ -21,7 +23,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.1',
+    version='0.2.0',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
@@ -79,3 +81,20 @@ setup(
             ]
         },
 )
+
+if os_name=='nt' and "install" in argv:
+    # for some reason on windows the .pth file ends up inside the .egg not sitepackages
+    import shutil
+    import sys
+    try:
+        shutil.copy( \
+            path.join(here, "vext_importer.pth"), \
+            path.join(site_packages_path, "vext_importer.pth"))
+        print('Import hook installed.')
+    except ImportError:
+        # Possibly .. uninstalling ?
+        try:
+            unlink(path.join(site_packages_path, "vext_importer.pth"))
+            print('Import hook uninstalled.')
+        except:
+            pass

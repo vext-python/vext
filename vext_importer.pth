@@ -1,2 +1,2 @@
 # Install the vext importer
-import vext; vext.install_importer()
+exec("try:\n import vext\n vext.install_importer()\nexcept:\n pass")
