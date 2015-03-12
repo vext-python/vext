@@ -1,43 +1,45 @@
+import os
+
 from distutils import sysconfig
-from setuptools import setup, find_packages  # Always prefer setuptools over distutils
-from setuptools.command import install_lib
-from codecs import open  # To use a consistent encoding
-from os import environ, path, unlink
-from os import name as os_name
-from glob import glob
-from shutil import copyfile
-from sys import argv
-from sys import path as sys_path
+from distutils.command.install_data import install_data
+from setuptools import setup
 
-here = path.abspath(path.dirname(__file__))
+here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
+
 site_packages_path = sysconfig.get_python_lib()
+site_packages_files = ["vext_importer.pth"] if os.environ.get('VIRTUAL_ENV') else []
 
-# Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+long_description=open('DESCRIPTION.RST').read()
+
+class vext_install_data(install_data):
+    # Make sure file is installed to sitepackages root on win32
+    def finalize_options(self):
+        """
+        On win32 the files here are changed to '' which
+        ends up inside the .egg, change this back to the
+        absolute path.
+        """
+        install_data.finalize_options(self)
+        global site_packages_files
+        for i, f in enumerate(list(self.distribution.data_files)):
+            if not isinstance(f, basestring):
+                folder, files = f
+                if files == site_packages_files:
+                    # Replace with absolute path version
+                    self.distribution.data_files[i] = (site_packages_path, files)
 
 
 setup(
-    name='vext',
-
-    # Versions should comply with PEP440.  For a discussion on single-sourcing
-    # the version across setup.py and the project code, see
-    # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.2.0',
+    cmdclass={'vext_install_data': vext_install_data},
+    name='test_install',
+    version='0.2.1',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
-
-    # The project's main homepage.
     url='https://github.com/stuaxo/vext',
-
-    # Author details
     author='Stuart Axon',
     author_email='stuaxo2@yahoo.com',
-
-    # Choose your license
     license='MIT',
-
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         # How mature is this project? Common values are
@@ -56,23 +58,14 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
     ],
-
-    # What does your project relate to?
-    keywords='sample setuptools development',
-
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
+    keywords='setuptools development',
     packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
 
-    # List run-time dependencies here.  These will be installed by pip when your
-    # project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
     install_requires=["pyyaml==3.11"],
 
-    # Install the import hook    
+    # Install the import hook
     data_files=[
-        (site_packages_path, ["vext_importer.pth"] if environ.get('VIRTUAL_ENV') else []),
+        (site_packages_path, site_packages_files),
     ],
 
     entry_points = {
@@ -81,20 +74,3 @@ setup(
             ]
         },
 )
-
-if os_name=='nt' and "install" in argv:
-    # for some reason on windows the .pth file ends up inside the .egg not sitepackages
-    import shutil
-    import sys
-    try:
-        shutil.copy( \
-            path.join(here, "vext_importer.pth"), \
-            path.join(site_packages_path, "vext_importer.pth"))
-        print('Import hook installed.')
-    except ImportError:
-        # Possibly .. uninstalling ?
-        try:
-            unlink(path.join(site_packages_path, "vext_importer.pth"))
-            print('Import hook uninstalled.')
-        except:
-            pass
