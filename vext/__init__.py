@@ -152,7 +152,10 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                         sys.path.append(p_abs)
                         added_dirs.add(p_abs)
 
-    site.addpackage(sitedir, pthfile, known_dirs)
+    if os.isfile(pthfile):
+        site.addpackage(sitedir, pthfile, known_dirs)
+    else:
+        logging.debug("pth file '%s' not found")
 
 
 def init_path():
