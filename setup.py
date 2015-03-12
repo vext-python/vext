@@ -61,7 +61,7 @@ setup(
     keywords='setuptools development',
     packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
 
-    install_requires=["pyyaml==3.11"],
+    install_requires=["pyyaml==3.11", "setuptools>=14.0"],
 
     # Install the import hook
     data_files=[
