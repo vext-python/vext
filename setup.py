@@ -31,7 +31,7 @@ class vext_install_data(install_data):
 
 setup(
     cmdclass={'vext_install_data': vext_install_data},
-    name='test_install',
+    name='vext',
     version='0.2.1',
 
     description='Use system python packages in a virtualenv',
