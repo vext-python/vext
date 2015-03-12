@@ -9,7 +9,7 @@ here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 site_packages_path = sysconfig.get_python_lib()
 site_packages_files = ["vext_importer.pth"] if os.environ.get('VIRTUAL_ENV') else []
 
-long_description=open('DESCRIPTION.RST').read()
+long_description=open('DESCRIPTION.rst').read()
 
 class vext_install_data(install_data):
     # Make sure file is installed to sitepackages root on win32

@@ -1,2 +1,2 @@
-# Install the vext importer
+# Install the vext importer - dont die if vext has been uninstalled.
 exec("try:\n import vext\n vext.install_importer()\nexcept:\n pass")
