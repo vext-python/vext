@@ -19,20 +19,21 @@ class vext_install_data(install_data):
         ends up inside the .egg, change this back to the
         absolute path.
         """
-        install_data.finalize_options(self)
         global site_packages_files
-        for i, f in enumerate(list(self.distribution.data_files)):
-            if not isinstance(f, basestring):
-                folder, files = f
-                if files == site_packages_files:
-                    # Replace with absolute path version
-                    self.distribution.data_files[i] = (site_packages_path, files)
+        install_data.finalize_options(self)
+        if os.name == 'nt':
+            for i, f in enumerate(list(self.distribution.data_files)):
+                if not isinstance(f, basestring):
+                    folder, files = f
+                    if files == site_packages_files:
+                        # Replace with absolute path version
+                        self.distribution.data_files[i] = (site_packages_path, files)
 
 
 setup(
     cmdclass={'vext_install_data': vext_install_data},
     name='vext',
-    version='0.2.2',
+    version='0.2.3',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
