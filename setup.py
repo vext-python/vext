@@ -3,15 +3,26 @@ import os
 from distutils import sysconfig
 from distutils.command.install_data import install_data
 from setuptools import setup, sandbox
+from setuptools import setup
+#from setuptools.sandbox import DirectorySandbox
 
 here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 
 site_packages_path = sysconfig.get_python_lib()
-vext_pth="vext_importer.pth"
-site_packages_files = [vext_pth] if os.environ.get('VIRTUAL_ENV') else []
-sandbox.DirectorySandbox._exception_patterns.append("vext_importer.pth")
+site_packages_files = ["vext_importer.pth"] if os.environ.get('VIRTUAL_ENV') else []
+## sandbox._EXCEPTIONS.extend(os.path.join(site_packages_path, f) for f in site_packages_files)
 
 long_description=open('DESCRIPTION.rst').read()
+
+
+# Monkey patch sandbox to allow installing of vext_importer
+_old_ok = sandbox.DirectorySandbox._ok
+def patched_ok(self, path):
+    if path in site_packages_files:
+        return True
+    else:
+        return _old_ok(self, path)
+sandbox.DirectorySandbox._ok = patched_ok
 
 class vext_install_data(install_data):
     # Make sure file is installed to sitepackages root on win32
@@ -36,7 +47,7 @@ class vext_install_data(install_data):
 setup(
     cmdclass={'vext_install_data': vext_install_data},
     name='vext',
-    version='0.2.6',
+    version='0.2.7',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
