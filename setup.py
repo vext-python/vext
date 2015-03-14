@@ -8,7 +8,7 @@ here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 
 site_packages_path = sysconfig.get_python_lib()
 site_packages_files = ["vext_importer.pth"] if os.environ.get('VIRTUAL_ENV') else []
-sandbox._EXCEPTIONS.extend(site_packages_files)
+sandbox._EXCEPTIONS.extend(os.path.join(site_packages_path, f) for f in site_packages_files)
 
 long_description=open('DESCRIPTION.rst').read()
 
@@ -35,7 +35,7 @@ class vext_install_data(install_data):
 setup(
     cmdclass={'vext_install_data': vext_install_data},
     name='vext',
-    version='0.2.4',
+    version='0.2.5',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
