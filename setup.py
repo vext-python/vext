@@ -4,27 +4,50 @@ from distutils import sysconfig
 from distutils.command.install_data import install_data
 from setuptools import setup, sandbox
 from setuptools import setup
-#from setuptools.sandbox import DirectorySandbox
 
 here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 
 site_packages_path = sysconfig.get_python_lib()
 site_packages_files = ["vext_importer.pth"] if os.environ.get('VIRTUAL_ENV') else []
-## sandbox._EXCEPTIONS.extend(os.path.join(site_packages_path, f) for f in site_packages_files)
 
 long_description=open('DESCRIPTION.rst').read()
 
 
-# Monkey patch sandbox to allow installing of vext_importer
-_old_ok = sandbox.DirectorySandbox._ok
-def patched_ok(self, path):
-    if path in site_packages_files:
-        return True
-    else:
-        return _old_ok(self, path)
-sandbox.DirectorySandbox._ok = patched_ok
+# The following bugs + fixes are true as of 14-03-2015, setuptools 14.0
+#
+# Since we are installing a file to site-packages this can cause a couple
+# of edge cases where setuptools.sandbox is trigged.
+#
+# 1.  
+# In Win32 the file path is normalised to '' and ends up inside the
+# .egg
+# This is fixed by finding the
+#
+# 2.
+# On Linux (Ubuntu Utopic) An UnpickleableException is triggered, by
+# the SandboxViolation when vext_importer.pth is covered, this
+# then gets wrapped in an UnpickleableException which will loop
+# until all memory is used up, this is fixed by fixup_install_data
+#
 
-class vext_install_data(install_data):
+
+
+
+def monkey_patch_sandbox():
+    """
+    Monkey patch sandbox to allow installing of vext_importer.pth
+    """
+    _old_ok = sandbox.DirectorySandbox._ok
+    def patched_ok(self, path):
+        if path.endswith("vext_importer.pth"):
+            return True
+        else:
+            return _old_ok(self, path)
+    sandbox.DirectorySandbox._ok = patched_ok
+monkey_patch_sandbox()
+
+
+class fixup_install_data(install_data):
     # Make sure file is installed to sitepackages root on win32
     def finalize_options(self):
         """
@@ -45,9 +68,9 @@ class vext_install_data(install_data):
 
 
 setup(
-    cmdclass={'vext_install_data': vext_install_data},
+    cmdclass={'install_data': fixup_install_data },
     name='vext',
-    version='0.2.7',
+    version='0.2.9',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
