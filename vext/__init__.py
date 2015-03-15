@@ -101,8 +101,6 @@ class GatekeeperFinder(object):
                 if path_entry == os.path.join(sitedir, m):
                     raise ImportError()
 
-            return None
-
         if path_entry == GatekeeperFinder.PATH_TRIGGER:
             # Activate this finder for special paths
             return None
@@ -110,16 +108,16 @@ class GatekeeperFinder(object):
             raise ImportError()
 
     def find_module(self, fullname, path=None):
-        if fullname in sys.modules:            
+        if fullname in sys.modules: 
             return sys.modules[fullname]
-
+        
         try:
             sitedir = getsyssitepackages()
             module_info = imp.find_module(fullname, [sitedir, self.path_entry])
             if module_info:
                 return GateKeeperLoader(module_info)
-
-            return None
+            else:
+                return None
         except Exception as e:
             raise
 
