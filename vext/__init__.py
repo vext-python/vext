@@ -1,3 +1,5 @@
+import traceback
+
 import collections
 import glob
 import imp
@@ -110,16 +112,27 @@ class GatekeeperFinder(object):
     def find_module(self, fullname, path=None):
         if fullname in sys.modules: 
             return sys.modules[fullname]
-        
+
+        sitedir = getsyssitepackages()
+        # Check paths other than system sitepackages first
+        other_paths = [ p for p in sys.path if p in [sitedir, GatekeeperFinder.PATH_TRIGGER]] + ['.']
+
         try:
-            sitedir = getsyssitepackages()
-            module_info = imp.find_module(fullname, [sitedir, self.path_entry])
+            module_info = imp.find_module(fullname, other_paths)
             if module_info:
-                return GateKeeperLoader(module_info)
-            else:
                 return None
-        except Exception as e:
-            raise
+        except ImportError:
+            try:
+                # Can it be found anywhere except sys sitedir?
+                module_info = imp.find_module(fullname, [sitedir, self.path_entry])
+                if module_info:
+                    # A module *in* sitepackages - s
+                    return GateKeeperLoader(module_info)
+                else:
+                    raise ImportError()
+            except ImportError:
+                raise
+
 
 def addpackage(sitedir, pthfile, known_dirs=None):
     """

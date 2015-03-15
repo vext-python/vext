@@ -70,7 +70,7 @@ class fixup_install_data(install_data):
 setup(
     cmdclass={'install_data': fixup_install_data },
     name='vext',
-    version='0.2.9',
+    version='0.2.10',
 
     description='Use system python packages in a virtualenv',
     long_description=long_description,
