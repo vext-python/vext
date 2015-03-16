@@ -21,7 +21,8 @@ long_description=open('DESCRIPTION.rst').read()
 # 1.  
 # In Win32 the file path is normalised to '' and ends up inside the
 # .egg
-# This is fixed by finding the
+# This is fixed by finding the file paths added in 'distribution' and
+# setting them back to their absolute versions.
 #
 # 2.
 # On Linux (Ubuntu Utopic) An UnpickleableException is triggered, by
