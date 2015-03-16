@@ -123,15 +123,16 @@ class GatekeeperFinder(object):
                 return None
         except ImportError:
             try:
-                # Can it be found anywhere except sys sitedir?
+                # If not in site packages will raise ImportError
                 module_info = imp.find_module(fullname, [sitedir, self.path_entry])
                 if module_info:
-                    # A module *in* sitepackages - s
+                    # A module *in* sitepackages - gatekeep it
                     return GateKeeperLoader(module_info)
                 else:
                     raise ImportError()
             except ImportError:
-                raise
+                # Not in site packages, pass
+                return None
 
 
 def addpackage(sitedir, pthfile, known_dirs=None):
