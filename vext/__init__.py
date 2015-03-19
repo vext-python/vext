@@ -12,12 +12,30 @@ import vext.registry
 
 from distutils.sysconfig import get_python_lib
 
-VIRTUAL_ENV=os.path.abspath(os.environ.get('VIRTUAL_ENV'))
+#if 'VIRTUAL_ENV' in os.environ:
+#    VIRTUAL_ENV=os.path.abspath(['VIRTUAL_ENV'])
+#elif:
+#    # Run directly from the venv
+#    for p in os.environ['PATH'].split(os.pathsep):
+#        if p and 
+#            os.path.isfile(os.path.join(p, python)):
+#            if sys.executable != p:
+#                VIRTUAL_ENV=os.path.normpath(p, '..')
+#            else:
+#                VIRTUAL_ENV=None
+#            break
+
+log_blocks='VEXT_LOG_BLOCKS' in os.environ
+remember_blocks='VEXT_REMEMBER_BLOCKS' in os.environ
+blocked_imports = vext.registry.blocked_imports
+allowed_modules=vext.registry.allowed_modules
+if 'VEXT_ALLOWED_MODULES' in os.environ:
+    allowed_modules.add(*[m.strip() for m in os.environ['VEXT_ALLOWED_MODULES'].split(' ,')])
 
 vext_pth=os.path.join(get_python_lib(), 'vext_importer.pth')
-allowed_modules=vext.registry.allowed_modules
 added_dirs = vext.registry.added_dirs
 _syssitepackages = None
+_in_venv = None
 
 if os.name == 'nt':
     # Windows needs environment variables + paths to be strings
@@ -25,26 +43,52 @@ if os.name == 'nt':
 else:
     env_t = unicode
 
+class VextException(Exception):
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
 def findsyspy():
     """
-    :return: First python in PATH outside of virtualenv
+    :return: First python in that is not sys.executable 
+             or sys.executable if not found
     """
-    python = os.path.basename(sys.executable)
-    for p in os.environ['PATH'].split(os.pathsep):
-        if p and \
-            not p.startswith(VIRTUAL_ENV) and\
-            os.path.isfile(os.path.join(p, python)):
-            return p
+    python=os.path.basename(sys.executable)
+    for folder in os.environ['PATH'].split(os.pathsep):
+        if folder and \
+            not folder.startswith(sys.exec_prefix) and\
+            os.path.isfile(os.path.join(folder, python)):
+            return os.path.join(folder, python)
+    else:
+        return sys.executable
 
-def getsyssitepackages(syspy_home=None):
+def in_venv():
+    global _in_venv
+    if _in_venv is not None:
+        return _in_venv
+
+    if 'VIRTUAL_ENV' in os.environ:
+        _in_venv = True
+    else:
+        # Find first python in path ... if its not this one,
+        # ...we are in a different python
+        python=os.path.basename(sys.executable)
+        for p in os.environ['PATH'].split(os.pathsep):
+            if os.path.isfile(os.path.join(p, python)):
+                _in_venv=sys.executable != p
+                break
+    
+    return _in_venv
+
+    
+
+def getsyssitepackages():
     """
     Get site-packages from system python
     """
     global _syssitepackages
     if not _syssitepackages:
-        syspy_home = syspy_home or findsyspy()
         env = os.environ
-        python = os.path.join(syspy_home, os.path.basename(sys.executable))
+        python = findsyspy()
         code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
         cmd = [python, '-c', code]
 
@@ -64,6 +108,8 @@ class GateKeeperLoader(object):
         Only lets modules in allowed_modules be loaded, others
         will get an ImportError
         """
+        global log_blocks, remember_blocks, blocked_imports
+
         # Get the name relative to SITEDIR .. 
         filepath = self.module_info[1]
         fullname = os.path.splitext(\
@@ -72,7 +118,12 @@ class GateKeeperLoader(object):
 
         basename = fullname.split('.')[0]
         if basename not in allowed_modules:
-            raise ImportError("Install library that provides module '%s' to virtualenv or add module to Vext.allowed_modules" % basename)
+            if remember_blocks:
+                blocked_imports.add(fullname)
+            if log_blocks:
+                raise ImportError("Vext blocked import of '%s'" % basename)
+            else:
+                raise ImportError()
 
         if not name in sys.modules:
             module = imp.load_module(fullname, *self.module_info)
@@ -92,19 +143,7 @@ class GatekeeperFinder(object):
         self.path_entry = path_entry
 
         sitedir = getsyssitepackages()
-        if path_entry == sitedir:
-            return None
-
-        if path_entry.startswith(sitedir):
-            for p in added_dirs:
-                if path_entry.startswith(p):
-                    raise ImportError()
-            for m in allowed_modules:
-                if path_entry == os.path.join(sitedir, m):
-                    raise ImportError()
-
-        if path_entry == GatekeeperFinder.PATH_TRIGGER:
-            # Activate this finder for special paths
+        if path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
             return None
         else:
             raise ImportError()
@@ -116,17 +155,15 @@ class GatekeeperFinder(object):
         sitedir = getsyssitepackages()
         # Check paths other than system sitepackages first
         other_paths = [ p for p in sys.path if p in [sitedir, GatekeeperFinder.PATH_TRIGGER]] + ['.']
-
         try:
             module_info = imp.find_module(fullname, other_paths)
             if module_info:
                 return None
         except ImportError:
             try:
-                # If not in site packages will raise ImportError
+                # Now check if in site packages and needs gatekeeping
                 module_info = imp.find_module(fullname, [sitedir, self.path_entry])
                 if module_info:
-                    # A module *in* sitepackages - gatekeep it
                     return GateKeeperLoader(module_info)
                 else:
                     raise ImportError()
@@ -171,6 +208,9 @@ def addpackage(sitedir, pthfile, known_dirs=None):
 
 
 def init_path():
+    """
+    Add any new modules that are directories to the PATH
+    """
     sitedir = getsyssitepackages()
     env_path = os.environ['PATH'].split(os.pathsep)
     for module in allowed_modules:
@@ -212,7 +252,15 @@ def spec_files():
 
 def load_specs():
     global added_dirs
+    
+    bad_specs = set()
+    last_error=None
+
     for fn in spec_files():
+        if fn in bad_specs:
+            # Don't try and load the same bad spec twice
+            continue
+
         try:
             spec = open_spec(open(fn))
 
@@ -221,12 +269,24 @@ def load_specs():
 
             sys_sitedir = getsyssitepackages()
             for pth in [ pth for pth in spec['pths'] or [] if pth]:
-                addpackage(sys_sitedir, os.path.join(sys_sitedir, pth), added_dirs)
-                init_path() # TODO
+                try:
+                    pth_file=os.path.join(sys_sitedir, pth)
+                    addpackage(sys_sitedir, pth_file, added_dirs)
+                    init_path() # TODO
+                except IOError, e:
+                    # Path files are optional..
+                    logging.debug('No pth found at %s', pth_file)
+                    pass
 
         except Exception as e:
-            logging.error('error loading spec %s: %s' % (fn, e))
-            raise
+            bad_specs.add(fn)
+            err_msg='error loading spec %s: %s' % (fn, e)
+            if last_error != err_msg:
+                logging.error(err_msg)
+            last_error=err_msg
+
+    if bad_specs:
+        raise VextError('Error loading spec files: %s' % ', '.join(bad_specs))
 
 def install_importer():
     """
@@ -235,7 +295,7 @@ def install_importer():
     install path hook.
     """
     logging.debug('install_importer')
-    if not os.environ.get('VIRTUAL_ENV'):
+    if not in_venv():
         logging.warning('No virtualenv active')
         return False
 

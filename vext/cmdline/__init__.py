@@ -80,6 +80,7 @@ def main():
     parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Disable Vext loader')
     parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
+    parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')
 
     args = parser.parse_args()
 

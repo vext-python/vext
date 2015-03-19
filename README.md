@@ -126,6 +126,39 @@ So in a virtualenv ```import pygtk``` should definitally fail if vext is
 installed but not vext.pygtk
 
 
+Environment Variables
+=====================
+
+Logging Blocked Imports
+-----------------------
+To see which modules Vext is blocking set VEXT_LOG_BLOCKS instead of
+standard ImportErrors, you will get ones like this:
+
+
+```bash
+$ VEXT_LOG_BLOCKS=1
+```
+```python
+>>> import pyaudio
+ImportError("Vext blocked import of pyaudio")
+```
+
+Remembering Blocked Imports
+---------------------------
+
+Vext can store all blocked imports in vext.blocked_imports by setting
+vext.remember_blocks to True:
+
+```
+>>> import vext
+>>> vext.remember_blocks = True
+>>> vext.blocked_imports
+set([])
+>>> import pygtk
+ImportError:
+>>> vext.blocked_imports
+set(["pygtk"])
+```
 
 Help out
 ========
