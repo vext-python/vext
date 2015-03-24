@@ -3,7 +3,6 @@ import os
 from distutils import sysconfig
 from distutils.command.install_data import install_data
 from setuptools import setup, sandbox
-from setuptools import setup
 
 here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
 
