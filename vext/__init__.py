@@ -37,6 +37,12 @@ added_dirs = vext.registry.added_dirs
 _syssitepackages = None
 _in_venv = None
 
+try:
+    unicode
+except NameError:
+    # Python 3
+    basestring = unicode = str
+
 if os.name == 'nt':
     # Windows needs environment variables + paths to be strings
     env_t = str
@@ -123,7 +129,8 @@ class GateKeeperLoader(object):
             if log_blocks:
                 raise ImportError("Vext blocked import of '%s'" % basename)
             else:
-                raise ImportError()
+                # Standard error message
+                raise ImportError("No module named %s" % basename)
 
         if not name in sys.modules:
             module = imp.load_module(fullname, *self.module_info)
@@ -143,7 +150,7 @@ class GatekeeperFinder(object):
         self.path_entry = path_entry
 
         sitedir = getsyssitepackages()
-        if path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
+        if not path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
             return None
         else:
             raise ImportError()
@@ -187,7 +194,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
             line = line.rstrip()
             if line:
                 if line.startswith(("import ", "import\t")):
-                    exec line
+                    exec(line)
                     continue
                 else:
                     p_rel = os.path.join(sitedir, line)
@@ -273,7 +280,7 @@ def load_specs():
                     pth_file=os.path.join(sys_sitedir, pth)
                     addpackage(sys_sitedir, pth_file, added_dirs)
                     init_path() # TODO
-                except IOError, e:
+                except IOError as e:
                     # Path files are optional..
                     logging.debug('No pth found at %s', pth_file)
                     pass
