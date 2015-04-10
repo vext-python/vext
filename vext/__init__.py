@@ -1,10 +1,9 @@
-import traceback
-
 import collections
 import glob
 import imp
 import logging
 import os
+import re
 import site
 import subprocess
 import sys
@@ -30,7 +29,7 @@ remember_blocks='VEXT_REMEMBER_BLOCKS' in os.environ
 blocked_imports = vext.registry.blocked_imports
 allowed_modules=vext.registry.allowed_modules
 if 'VEXT_ALLOWED_MODULES' in os.environ:
-    allowed_modules.add(*[m.strip() for m in os.environ['VEXT_ALLOWED_MODULES'].split(' ,')])
+    allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
 
 vext_pth=os.path.join(get_python_lib(), 'vext_importer.pth')
 added_dirs = vext.registry.added_dirs
@@ -194,7 +193,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
             line = line.rstrip()
             if line:
                 if line.startswith(("import ", "import\t")):
-                    exec(line)
+                    exec(line, globals(), locals())
                     continue
                 else:
                     p_rel = os.path.join(sitedir, line)
