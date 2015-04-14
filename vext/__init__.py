@@ -11,6 +11,10 @@ import vext.registry
 
 from distutils.sysconfig import get_python_lib
 
+logger = logging.getLogger("vext")
+if "VEXT_DEBUG_LOG" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+
 #if 'VIRTUAL_ENV' in os.environ:
 #    VIRTUAL_ENV=os.path.abspath(['VIRTUAL_ENV'])
 #elif:
@@ -48,9 +52,11 @@ if os.name == 'nt':
 else:
     env_t = unicode
 
+
 class VextException(Exception):
     def __init__(*args, **kwargs):
         Exception.__init__(*args, **kwargs)
+
 
 def findsyspy():
     """
@@ -65,6 +71,7 @@ def findsyspy():
             return os.path.join(folder, python)
     else:
         return sys.executable
+
 
 def in_venv():
     global _in_venv
@@ -85,7 +92,6 @@ def in_venv():
     return _in_venv
 
     
-
 def getsyssitepackages():
     """
     Get site-packages from system python
@@ -121,7 +127,7 @@ class GateKeeperLoader(object):
             os.path.relpath(filepath, getsyssitepackages())\
             )[0].replace(os.sep, '.')
 
-        basename = fullname.split('.')[0]
+        basename = fullname.split('.')[0].rstrip('0123456789-')
         if basename not in allowed_modules:
             if remember_blocks:
                 blocked_imports.add(fullname)
@@ -131,8 +137,13 @@ class GateKeeperLoader(object):
                 # Standard error message
                 raise ImportError("No module named %s" % basename)
 
-        if not name in sys.modules:
-            module = imp.load_module(fullname, *self.module_info)
+        if name not in sys.modules:
+            try:
+                logger.debug("load_module %s %s", name, self.module_info)
+                module = imp.load_module(name, *self.module_info)
+            except Exception as e:
+                logger.debug(e)
+                raise
             sys.modules[fullname] = module
 
         return sys.modules[fullname]
@@ -149,9 +160,11 @@ class GatekeeperFinder(object):
         self.path_entry = path_entry
 
         sitedir = getsyssitepackages()
-        if not path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
-            return None
+        if path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
+            logger.debug("handle entry %s", path_entry)
+            return
         else:
+            logger.debug("not handling entry %s", path_entry)
             raise ImportError()
 
     def find_module(self, fullname, path=None):
@@ -160,22 +173,24 @@ class GatekeeperFinder(object):
 
         sitedir = getsyssitepackages()
         # Check paths other than system sitepackages first
-        other_paths = [ p for p in sys.path if p in [sitedir, GatekeeperFinder.PATH_TRIGGER]] + ['.']
+        other_paths = [ p for p in sys.path if p not in [sitedir, GatekeeperFinder.PATH_TRIGGER]] + ['.']
         try:
             module_info = imp.find_module(fullname, other_paths)
             if module_info:
-                return None
+                logger.debug("found module in sitedir")
+                return
         except ImportError:
             try:
                 # Now check if in site packages and needs gatekeeping
                 module_info = imp.find_module(fullname, [sitedir, self.path_entry])
                 if module_info:
+                    logger.debug("found module in sitedir or subdirectory")
                     return GateKeeperLoader(module_info)
                 else:
                     raise ImportError()
             except ImportError:
                 # Not in site packages, pass
-                return None
+                return
 
 
 def addpackage(sitedir, pthfile, known_dirs=None):
@@ -249,12 +264,14 @@ def open_spec(f):
 
     return parsed
 
+
 def spec_files():
     """
     :return: Iterator over spec files.
     """
     sitedir=get_python_lib()
     return glob.glob(os.path.join(sitedir, os.path.normpath('vext/specs/*.vext')))
+
 
 def load_specs():
     global added_dirs
@@ -294,6 +311,7 @@ def load_specs():
     if bad_specs:
         raise VextError('Error loading spec files: %s' % ', '.join(bad_specs))
 
+
 def install_importer():
     """
     If in a virtualenv then load spec files to decide which
@@ -306,7 +324,15 @@ def install_importer():
         return False
 
     if GatekeeperFinder.PATH_TRIGGER not in sys.path:
-        load_specs()
-        sys.path.append(GatekeeperFinder.PATH_TRIGGER)
-        sys.path_hooks.append(GatekeeperFinder)
+        try:
+            load_specs()
+            sys.path.append(GatekeeperFinder.PATH_TRIGGER)
+            sys.path_hooks.append(GatekeeperFinder)
+        except Exception as e:
+            """
+            Dont kill other programmes because of a vext error
+            """
+            logger.info(str(e))
+            if logger.getEffectiveLevel() == logging.DEBUG:
+                raise
         return True
