@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 SETUPTOOLS_MIN_VERSION="0.14.1"
+# Heinous hack...
 # if setuptools is too old then quit - vext seems to trip some
 # bugs on older versions causing serious issues... 
 if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
