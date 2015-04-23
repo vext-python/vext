@@ -86,7 +86,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.7',
+    version='0.3.9',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
@@ -117,7 +117,8 @@ setup(
     keywords='setuptools development',
     packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
 
-    install_requires=["pyyaml==3.11", "setuptools>=15.0.1"],
+    setup_requires=["setuptools>=15.0.1"],
+    install_requires=["pyyaml==3.11"],
 
     # Install the import hook
     #data_files=[
