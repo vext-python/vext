@@ -1,3 +1,15 @@
+import subprocess
+import sys
+
+SETUPTOOLS_MIN_VERSION="0.14.1"
+# if setuptools is too old then quit - vext seems to trip some
+# bugs on older versions causing serious issues... 
+if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
+    print('Ensure setuptools >= {}'.format(SETUPTOOLS_MIN_VERSION))
+    p=subprocess.Popen("pip install -U 'setuptools>={}'".format(SETUPTOOLS_MIN_VERSION), shell=True)
+    p.wait()
+
+
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath
 
@@ -7,6 +19,8 @@ from distutils.command.build import build
 from setuptools import setup
 from setuptools.command.develop import develop
 from setuptools.command.easy_install import easy_install
+
+from pkg_resources import WorkingSet
 
 here = normpath(abspath(dirname(__file__)))
 
@@ -44,7 +58,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.3',
+    version='0.3.4',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
