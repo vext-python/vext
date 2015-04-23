@@ -72,7 +72,7 @@ class CleanCommand(Command):
                 print('removing %s' % relpath(path))
                 rmtree(path)
 
-long_description=open('DESCRIPTION.rst').read()
+long_description=open(join(here, 'DESCRIPTION.rst')).read()
 
 setup(
     cmdclass={
@@ -83,7 +83,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.5',
+    version='0.3.6',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
