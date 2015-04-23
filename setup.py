@@ -23,8 +23,6 @@ from setuptools import Command
 from setuptools.command.develop import develop
 from setuptools.command.easy_install import easy_install
 
-from pkg_resources import WorkingSet
-
 here = normpath(abspath(dirname(__file__)))
 
 
@@ -85,7 +83,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.4',
+    version='0.3.5',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
