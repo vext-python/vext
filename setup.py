@@ -14,6 +14,7 @@ if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
+from textwrap import dedent
 
 from distutils import sysconfig
 from distutils.command.build import build
@@ -72,7 +73,9 @@ class CleanCommand(Command):
                 print('removing %s' % relpath(path))
                 rmtree(path)
 
-long_description=open(join(here, 'DESCRIPTION.rst')).read()
+long_description=dedent("""
+    Use system python packages in virtualenv (for packages that dont work in virtualenv).
+""")
 
 setup(
     cmdclass={
@@ -83,7 +86,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.6',
+    version='0.3.7',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
