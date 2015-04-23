@@ -1,14 +1,14 @@
 import subprocess
 import sys
 
-SETUPTOOLS_MIN_VERSION="0.14.1"
-# Heinous hack...
-# if setuptools is too old then quit - vext seems to trip some
-# bugs on older versions causing serious issues... 
-if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
-    print('Ensure setuptools >= {}'.format(SETUPTOOLS_MIN_VERSION))
-    p=subprocess.Popen("pip install -U 'setuptools>={}'".format(SETUPTOOLS_MIN_VERSION), shell=True)
-    p.wait()
+#SETUPTOOLS_MIN_VERSION="0.14.1"
+## Heinous hack...
+## if setuptools is too old then quit - vext seems to trip some
+## bugs on older versions causing serious issues... 
+#if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
+#    print('Ensure setuptools >= {}'.format(SETUPTOOLS_MIN_VERSION))
+#    p=subprocess.Popen("pip install -U 'setuptools>={}'".format(SETUPTOOLS_MIN_VERSION), shell=True)
+#    p.wait()
 
 
 from glob import glob
@@ -117,7 +117,7 @@ setup(
     keywords='setuptools development',
     packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
 
-    install_requires=["pyyaml==3.11", "setuptools>=14.0"],
+    install_requires=["pyyaml==3.11", "setuptools>=15.0.1"],
 
     # Install the import hook
     #data_files=[
