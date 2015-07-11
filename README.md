@@ -1,28 +1,48 @@
-Vext allows selective use of system python packages in a virtualenv.
+Some things don't easily work in virtualenv, so use them from the system 
+python, without --system-site-packages.
 
-Rationale
-=========
+Example
+=======
 
-Virtualenv is great and has been picked up in the webdev community
-for other fields there are a lot of libraries that don't work yet.
+(my-virtualenv) $ pip install -U pip setuptools
 
-Before Vext you could open your virtualenv completely or you
-could use symlinks (often used by gtk).
+(my-virtualenv) $ pip vext.pygame
 
-Allowing the virtualenv access to all system packages loses some
-of the advantages of virtualenv.
+Blerb
+=====
 
-Using symlinks doesn't work on windows.
+Virtualenv is great, many packages in the webdev community support
+it, when it comes to fields like graphics and audio getting things
+working is a pain.
 
-Vext solves this by only allowing specific libraries to import
-from the site packages.
+Why not use --system-site-packages?
+-----------------------------------
 
+Pulling in everything gets things working quickly, but negates
+many of the advantages of virtualenv.
+
+For instance it can be easy to forget to add packages to 
+requirements.txt when everything "works for me(TM)".
+
+What about symlinks?
+--------------------
+
+This is quite a clean solution, but doesn't work in Windows.
+
+
+Vext
+----
+
+* Allows only specific libraries to be imported, specified in .vext files.
+* Works on windows
 
 Available packages
 ==================
 
 Use pip to install one of these packages
 
+* vext.panda3d
+* vext.pygame
 * vext.pygtk
 * vext.gi
 
@@ -30,9 +50,12 @@ Use pip to install one of these packages
 Adding packages
 ===============
 
-Vext is a workaround, if you can - then it might better to fix the
-reason the package you want to use doesn't work - in the case of
-bindings then switching to CFFI would probably help a lot here.
+Vext is a workaround, if you can - it's might better to fix make
+packages to work in virtualenv. 
+
+In the case of bindings then switching from the python C API to
+CFFI is often a great solution (as a bonus, your package will
+work with pypy too).
 
 Still reading ?
 
