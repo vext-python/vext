@@ -5,6 +5,7 @@ Example
 =======
 
 Important ! - make sure pip and setuptools are up to date!
+
 (my-virtualenv) $ pip install -U pip setuptools
 
 (my-virtualenv) $ pip vext.pygame
