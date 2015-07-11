@@ -1,38 +1,74 @@
-Vext allows selective use of system python packages in a virtualenv.
+Some things don't easily work in virtualenv, so use them from the system 
+python, without --system-site-packages.
 
-Rationale
-=========
+Example
+=======
 
-Virtualenv is great and has been picked up in the webdev community
-for other fields there are a lot of libraries that don't work yet.
+Make sure pip and setuptools are up to date:
 
-Before Vext you could open your virtualenv completely or you
-could use symlinks (often used by gtk).
+(my-virtualenv) $ pip install -U pip setuptools
 
-Allowing the virtualenv access to all system packages loses some
-of the advantages of virtualenv.
-
-Using symlinks doesn't work on windows.
-
-Vext solves this by only allowing specific libraries to import
-from the site packages.
+(my-virtualenv) $ pip vext vext.pygame
 
 
 Available packages
 ==================
 
-Use pip to install one of these packages
+These can be installed using pip as long as corresponding package is installed in the system python
 
-* vext.pygtk
-* vext.gi
+  vext.panda3d
+  vext.pygame
+
+  vext.pygtk
+  vext.gi
+
+  vext.pyqt4
+
+
+Blerb
+=====
+
+Virtualenv is great and is really well supported in the web development
+community.  
+
+Packages for graphics, audio and guis often use the python C API and
+so can't be installed a virtualenv using pip.
+
+Vext lets you use access specific modules in the system python, using
+just pip and standard requirements.
+
+
+Why not use --system-site-packages?
+-----------------------------------
+
+Pulling in everything gets things working quickly, but negates
+many of the advantages of virtualenv.
+
+For instance it can be easy to forget to add packages to 
+requirements.txt when everything "works for me(TM)".
+
+What about symlinks?
+--------------------
+
+This is quite a clean solution, but doesn't work in Windows.
+
+
+Vext
+----
+
+Acts as a gatekeeper allowing access to particular libraries.
+Works 
 
 
 Adding packages
 ===============
 
-Vext is a workaround, if you can - then it might better to fix the
-reason the package you want to use doesn't work - in the case of
-bindings then switching to CFFI would probably help a lot here.
+Vext is a workaround, if you can - it's might better to fix make
+packages to work in virtualenv. 
+
+In the case of bindings then switching from the python C API to
+CFFI is often a great solution (as a bonus, your package will
+work with pypy too).
 
 Still reading ?
 
@@ -167,6 +203,6 @@ Please test this, so far it has only been tested on Ubuntu and Windows.
 
 Thanks
 ======
-ruamel/venvgtk - for some of the ideas
+ruamel/venvgtk - for showing something like this is possible
 pymotw article on modules and imports
 
