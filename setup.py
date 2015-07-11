@@ -86,7 +86,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.9',
+    version='0.3.10',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 

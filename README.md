@@ -201,6 +201,15 @@ Help out
 
 Please test this, so far it has only been tested on Ubuntu and Windows.
 
+
+TODO
+====
+
+Merging the finder and loader should make it possible to know if we
+are importing an allowed module, this would mean the submodules wouldn't
+need to be specified in the .vext file.
+
+
 Thanks
 ======
 ruamel/venvgtk - for showing something like this is possible
