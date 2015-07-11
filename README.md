@@ -44,8 +44,11 @@ Use pip to install one of these packages
 
 * vext.panda3d
 * vext.pygame
+
 * vext.pygtk
 * vext.gi
+
+* vext.pyqt4
 
 
 Adding packages
