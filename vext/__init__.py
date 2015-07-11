@@ -10,20 +10,21 @@ import sys
 import vext.registry
 
 from distutils.sysconfig import get_python_lib
+from os.path import abspath, basename, join, isdir, isfile, normpath, splitext, relpath
 
 logger = logging.getLogger("vext")
 if "VEXT_DEBUG_LOG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
 
 #if 'VIRTUAL_ENV' in os.environ:
-#    VIRTUAL_ENV=os.path.abspath(['VIRTUAL_ENV'])
+#    VIRTUAL_ENV=abspath(['VIRTUAL_ENV'])
 #elif:
 #    # Run directly from the venv
 #    for p in os.environ['PATH'].split(os.pathsep):
 #        if p and 
-#            os.path.isfile(os.path.join(p, python)):
+#            isfile(join(p, python)):
 #            if sys.executable != p:
-#                VIRTUAL_ENV=os.path.normpath(p, '..')
+#                VIRTUAL_ENV=normpath(p, '..')
 #            else:
 #                VIRTUAL_ENV=None
 #            break
@@ -35,7 +36,7 @@ allowed_modules=vext.registry.allowed_modules
 if 'VEXT_ALLOWED_MODULES' in os.environ:
     allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
 
-vext_pth=os.path.join(get_python_lib(), 'vext_importer.pth')
+vext_pth=join(get_python_lib(), 'vext_importer.pth')
 added_dirs = vext.registry.added_dirs
 _syssitepackages = None
 _in_venv = None
@@ -63,12 +64,12 @@ def findsyspy():
     :return: First python in that is not sys.executable 
              or sys.executable if not found
     """
-    python=os.path.basename(sys.executable)
+    python=basename(sys.executable)
     for folder in os.environ['PATH'].split(os.pathsep):
         if folder and \
             not folder.startswith(sys.exec_prefix) and\
-            os.path.isfile(os.path.join(folder, python)):
-            return os.path.join(folder, python)
+            isfile(join(folder, python)):
+            return join(folder, python)
     else:
         return sys.executable
 
@@ -83,9 +84,9 @@ def in_venv():
     else:
         # Find first python in path ... if its not this one,
         # ...we are in a different python
-        python=os.path.basename(sys.executable)
+        python=basename(sys.executable)
         for p in os.environ['PATH'].split(os.pathsep):
-            if os.path.isfile(os.path.join(p, python)):
+            if isfile(join(p, python)):
                 _in_venv=sys.executable != p
                 break
     
@@ -123,8 +124,8 @@ class GateKeeperLoader(object):
 
         # Get the name relative to SITEDIR .. 
         filepath = self.module_info[1]
-        fullname = os.path.splitext(\
-            os.path.relpath(filepath, getsyssitepackages())\
+        fullname = splitext(\
+            relpath(filepath, getsyssitepackages())\
             )[0].replace(os.sep, '.')
 
         basename = fullname.split('.')[0].rstrip('0123456789-')
@@ -201,7 +202,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
     the .pth and add them to the known_dirs set    
     """
     known_dirs = set(known_dirs or [])
-    with open(os.path.join(sitedir, pthfile)) as f:
+    with open(join(sitedir, pthfile)) as f:
         for n, line in enumerate(f):
             if line.startswith("#"):
                 continue
@@ -211,18 +212,18 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                     exec(line, globals(), locals())
                     continue
                 else:
-                    p_rel = os.path.join(sitedir, line)
-                    p_abs = os.path.abspath(line)
-                    if os.path.isdir(p_rel):                        
+                    p_rel = join(sitedir, line)
+                    p_abs = abspath(line)
+                    if isdir(p_rel):                        
                         os.environ['PATH'] += env_t(os.pathsep + p_rel)
                         sys.path.append(p_rel)
                         added_dirs.add(p_rel)
-                    elif os.path.isdir(p_abs):
+                    elif isdir(p_abs):
                         os.environ['PATH'] += env_t(os.pathsep + p_abs)
                         sys.path.append(p_abs)
                         added_dirs.add(p_abs)
 
-    if os.path.isfile(pthfile):
+    if isfile(pthfile):
         site.addpackage(sitedir, pthfile, known_dirs)
     else:
         logging.debug("pth file '%s' not found")
@@ -235,8 +236,8 @@ def init_path():
     sitedir = getsyssitepackages()
     env_path = os.environ['PATH'].split(os.pathsep)
     for module in allowed_modules:
-        p = os.path.join(sitedir, module)
-        if os.path.isdir(p) and not p in env_path:
+        p = join(sitedir, module)
+        if isdir(p) and not p in env_path:
             os.environ['PATH'] += env_t(os.pathsep + p)
 
 
@@ -270,7 +271,7 @@ def spec_files():
     :return: Iterator over spec files.
     """
     sitedir=get_python_lib()
-    return glob.glob(os.path.join(sitedir, os.path.normpath('vext/specs/*.vext')))
+    return glob.glob(join(sitedir, normpath('vext/specs/*.vext')))
 
 
 def load_specs():
@@ -293,7 +294,7 @@ def load_specs():
             sys_sitedir = getsyssitepackages()
             for pth in [ pth for pth in spec['pths'] or [] if pth]:
                 try:
-                    pth_file=os.path.join(sys_sitedir, pth)
+                    pth_file=join(sys_sitedir, pth)
                     addpackage(sys_sitedir, pth_file, added_dirs)
                     init_path() # TODO
                 except IOError as e:
