@@ -4,18 +4,39 @@ python, without --system-site-packages.
 Example
 =======
 
-Important ! - make sure pip and setuptools are up to date!
+Make sure pip and setuptools are up to date:
 
 (my-virtualenv) $ pip install -U pip setuptools
 
-(my-virtualenv) $ pip vext.pygame
+(my-virtualenv) $ pip vext vext.pygame
+
+
+Available packages
+==================
+
+These can be installed using pip as long as corresponding package is installed in the system python
+
+  vext.panda3d
+  vext.pygame
+
+  vext.pygtk
+  vext.gi
+
+  vext.pyqt4
+
 
 Blerb
 =====
 
-Virtualenv is great, many packages in the webdev community support
-it, when it comes to fields like graphics and audio getting things
-working is a pain.
+Virtualenv is great and is really well supported in the web development
+community.  
+
+Packages for graphics, audio and guis often use the python C API and
+so can't be installed a virtualenv using pip.
+
+Vext lets you use access specific modules in the system python, using
+just pip and standard requirements.
+
 
 Why not use --system-site-packages?
 -----------------------------------
@@ -35,21 +56,8 @@ This is quite a clean solution, but doesn't work in Windows.
 Vext
 ----
 
-* Allows only specific libraries to be imported, specified in .vext files.
-* Works on windows
-
-Available packages
-==================
-
-Use pip to install one of these packages
-
-* vext.panda3d
-* vext.pygame
-
-* vext.pygtk
-* vext.gi
-
-* vext.pyqt4
+Acts as a gatekeeper allowing access to particular libraries.
+Works 
 
 
 Adding packages
@@ -195,6 +203,6 @@ Please test this, so far it has only been tested on Ubuntu and Windows.
 
 Thanks
 ======
-ruamel/venvgtk - for some of the ideas
+ruamel/venvgtk - for showing something like this is possible
 pymotw article on modules and imports
 
