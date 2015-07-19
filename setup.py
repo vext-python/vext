@@ -1,15 +1,40 @@
+import os
 import subprocess
 import sys
+import pkg_resources
 
-#SETUPTOOLS_MIN_VERSION="0.14.1"
-## Heinous hack...
-## if setuptools is too old then quit - vext seems to trip some
-## bugs on older versions causing serious issues... 
-#if set(["install", "develop", "build", "sdist"]).intersection(sys.argv):
-#    print('Ensure setuptools >= {}'.format(SETUPTOOLS_MIN_VERSION))
-#    p=subprocess.Popen("pip install -U 'setuptools>={}'".format(SETUPTOOLS_MIN_VERSION), shell=True)
-#    p.wait()
+from distutils.version import StrictVersion
+from pkg_resources import DistributionNotFound
 
+def upgrade_setuptools():
+    """ 
+    setuptools 12.2 can trigger a really nasty bug
+    that eats all memory, so upgrade it to
+    14.1, which is known to be good.
+    """
+    # Note - I tried including the higher version in
+    # setup_requires, but was still able to trigger
+    # the bug. - stu.axon
+    MIN_SETUPTOOLS = "14.1"
+    r = None
+    try:
+        r = pkg_resources.require(["setuptools"])[0]
+    except DistributionNotFound:
+        # ok, setuptools will be installed later
+        return
+
+    if StrictVersion(r.version) >= StrictVersion(MIN_SETUPTOOLS):
+        return
+    else:
+        print("Upgrading setuptools...")
+        subprocess.call("pip install 'setuptools>=%s'" % MIN_SETUPTOOLS, shell=True)
+
+if "install" in sys.argv:
+    upgrade_setuptools()
+
+
+import subprocess
+import sys
 
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath, relpath
@@ -25,7 +50,7 @@ from setuptools.command.develop import develop
 from setuptools.command.easy_install import easy_install
 
 here = normpath(abspath(dirname(__file__)))
-
+    
 
 class BuildWithPTH(build):
     def run(self):
@@ -86,7 +111,7 @@ setup(
     },
 
     name='vext',
-    version='0.3.11',
+    version='0.4.0',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 

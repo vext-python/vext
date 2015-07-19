@@ -3,13 +3,25 @@ import os
 import re
 import sys
 
+from vext import in_venv
+
+def requires_venv(f):
+    def run():
+        if not in_venv():
+            print("Must run inside virtualenv to %s vext." % f.__name__)
+            sys.exit(1)
+        else:
+            f()
+    return run
+
 def list_vexts():
     from vext import spec_files
     for fn in spec_files():
         print(os.path.basename(fn))
 
+@requires_venv
 def enable():
-    from vext import vext_pth
+    from vext import vext_pth    
     _lines = []
     with open(vext_pth, mode='r') as f:
         for line in f.readlines():
@@ -34,6 +46,7 @@ def enable():
     os.rename(vext_pth, '%s~' % vext_pth)
     os.rename('%s.tmp' % vext_pth, vext_pth)
 
+@requires_venv
 def disable():
     from vext import vext_pth
     _lines = []
@@ -67,7 +80,7 @@ def status():
     else:
         enabled_msg = 'disabled'
     
-    if os.environ['VIRTUAL_ENV']:
+    if in_venv():
         print('Running in virtualenv [%s]' % enabled_msg)
     else:
         print('Not running in virtualenv [%s]' % enabled_msg)

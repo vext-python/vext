@@ -33,6 +33,9 @@ log_blocks='VEXT_LOG_BLOCKS' in os.environ
 remember_blocks='VEXT_REMEMBER_BLOCKS' in os.environ
 blocked_imports = vext.registry.blocked_imports
 allowed_modules=vext.registry.allowed_modules
+
+orig_prefix = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
+
 if 'VEXT_ALLOWED_MODULES' in os.environ:
     allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
 
@@ -60,18 +63,20 @@ class VextException(Exception):
 
 
 def findsyspy():
-    """
-    :return: First python in that is not sys.executable 
-             or sys.executable if not found
-    """
-    python=basename(sys.executable)
-    for folder in os.environ['PATH'].split(os.pathsep):
-        if folder and \
-            not folder.startswith(sys.exec_prefix) and\
-            isfile(join(folder, python)):
-            return join(folder, python)
-    else:
+    if not in_venv():
         return sys.executable
+
+    python=basename(sys.executable)
+    with open( orig_prefix ) as op:
+        prefix = op.read()
+
+        for folder in os.environ['PATH'].split(os.pathsep):
+            if folder and \
+                folder.startswith(prefix) and\
+                isfile(join(folder, python)):
+                return join(folder, python)
+
+
 
 
 def in_venv():
@@ -79,15 +84,24 @@ def in_venv():
     if _in_venv is not None:
         return _in_venv
 
+    if not os.path.isfile(orig_prefix):
+        logger.debug("in_venv no orig_prefix [%s]", orig_prefix)
+        # TODO - check this is actually valid !
+        _in_venv = False
+        return _in_venv
+
     if 'VIRTUAL_ENV' in os.environ:
+        logger.debug("in_venv VIRTUAL_ENV set.")
         _in_venv = True
     else:
         # Find first python in path ... if its not this one,
         # ...we are in a different python
         python=basename(sys.executable)
         for p in os.environ['PATH'].split(os.pathsep):
-            if isfile(join(p, python)):
-                _in_venv=sys.executable != p
+            py_path = join(p, python)
+            if isfile(py_path):
+                logger.debug("in_venv py_at [%s] return: %s", (py_path, sys.executable != py_path))
+                _in_venv=sys.executable != py_path
                 break
     
     return _in_venv
@@ -99,6 +113,9 @@ def getsyssitepackages():
     """
     global _syssitepackages
     if not _syssitepackages:
+        if not in_venv():
+            _syssitepackages = get_python_lib()
+            return _syssitepackages
         env = os.environ
         python = findsyspy()
         code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
@@ -321,7 +338,7 @@ def install_importer():
     """
     logging.debug('install_importer')
     if not in_venv():
-        logging.warning('No virtualenv active')
+        logging.debug('No virtualenv active py:[%]' % sys.executable)
         return False
 
     if GatekeeperFinder.PATH_TRIGGER not in sys.path:
@@ -336,4 +353,6 @@ def install_importer():
             logger.info(str(e))
             if logger.getEffectiveLevel() == logging.DEBUG:
                 raise
+        
+        logging.debug("importer installed")
         return True
