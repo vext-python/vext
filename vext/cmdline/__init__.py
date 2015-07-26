@@ -21,6 +21,9 @@ def list_vexts():
 
 @requires_venv
 def enable():
+    """
+    Uncomment any lines that start with #import in the .pth file
+    """
     from vext import vext_pth    
     _lines = []
     with open(vext_pth, mode='r') as f:
@@ -48,6 +51,9 @@ def enable():
 
 @requires_venv
 def disable():
+    """
+    Comment any lines that start with import in the .pth file
+    """
     from vext import vext_pth
     _lines = []
     with open(vext_pth, mode='r') as f:
@@ -85,6 +91,17 @@ def status():
     else:
         print('Not running in virtualenv [%s]' % enabled_msg)
 
+def check(vextfile):
+    import vext
+    # not efficient ... but then there shouldn't be many of these
+    for fn in vext.spec_files():
+        if os.path.splitext(os.path.basename(fn))[0] == vextfile:
+            f = vext.open_spec(open(fn))
+            modules = f.get('test_import', [])
+            for success, module in vext.test_imports(modules):
+                print(module + '   OK' if success else module + ' FAIL')
+            break
+
 def main():
     import argparse
 
@@ -93,6 +110,7 @@ def main():
     parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Disable Vext loader')
     parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
+    parser.add_argument('-c', '--check', dest='check', help='Test imports for vext file')
     # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')
 
     args = parser.parse_args()
@@ -106,6 +124,8 @@ def main():
         enable()
     elif args.status:
         status()
+    elif args.check:
+        check(args.check)
     else:
         status()
         print()

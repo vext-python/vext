@@ -286,19 +286,32 @@ def open_spec(f):
     pths    - list of .pth files to load
     """
     import yaml
-    keys = ['modules', 'pths']
+    keys = ['modules', 'pths', 'test_import']
     data = yaml.load(f)
     parsed = dict()
     for k in keys:
         v = data.get(k, [])
         # Items are always lists
         if isinstance(v, basestring):
-            parsed[k] = v.split()
+            parsed[k] = re.split(r",| ", v)
         else:
             parsed[k] = v
 
     return parsed
 
+def test_imports(modules, py=None):
+    """
+    Iterate through test_imports and try and import them    
+    """
+    # TODO - allow passing different python to run remotely
+    for module in modules:
+        try:
+            __import__(module)
+            yield True, module
+        except:
+            yield False, module
+
+        
 
 def spec_files():
     """
