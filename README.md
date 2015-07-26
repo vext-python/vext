@@ -17,9 +17,11 @@ Available packages
 These can be installed using pip as long as corresponding package is installed in the system python
 
   vext.panda3d
+  
   vext.pygame
 
   vext.pygtk
+  
   vext.gi
 
   vext.pyqt4
@@ -204,6 +206,11 @@ Please test this, so far it has only been tested on Ubuntu and Windows.
 
 TODO
 ====
+
+The 'test import' part of the .vext file is not implemented yet,
+this would stop installs unless the system requirements are
+available (or at least write a warning to the console).
+
 
 Merging the finder and loader should make it possible to know if we
 are importing an allowed module, this would mean the submodules wouldn't
