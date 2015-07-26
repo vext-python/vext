@@ -117,7 +117,19 @@ List of modules to allow importing from the system site packages.
 
 test-import
 ------------
-*TODO* Vext will check if it can import these modules.
+These are modules that should be able to be imported if everything
+is working correctly, you can test this using vext -c, for instance
+
+```
+$ vext -c pygtk
+pygtk.vext
+import gtk: [success]
+import pygtk: [success]
+```
+
+You can also use ```vext -c '*'``` to check every vext files imports,
+which can be useful to help diagnose problems.
+
 
 pths
 ----
@@ -145,6 +157,8 @@ optional arguments:
   -e, --enable   Disable Vext loader
   -d, --disable  Enable Vext loader
   -s, --status   Show Vext status
+  -c CHECK, --check CHECK
+                        [external package] Test imports for external package
 ```
 
 If Vext is causing an issue with other tools try disabling it,
