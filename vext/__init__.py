@@ -63,6 +63,9 @@ class VextException(Exception):
 
 
 def findsyspy():
+    """
+    :return: system python executable
+    """
     if not in_venv():
         return sys.executable
 
@@ -80,6 +83,12 @@ def findsyspy():
 
 
 def in_venv():
+    """
+    :return: True if in running from a virtualenv
+
+    Has to detect the case where the python binary is run
+    directly, so VIRTUAL_ENV may not be set
+    """
     global _in_venv
     if _in_venv is not None:
         return _in_venv
@@ -124,6 +133,13 @@ def getsyssitepackages():
         _syssitepackages = subprocess.check_output(cmd, env=env).decode('utf-8').splitlines()[0]
     return _syssitepackages
 
+def filename_to_module(filename):
+    """
+    convert a filename like html5lib-0.999.egg-info to html5lib
+    """
+    find = re.compile(r"^[^.|-]*")
+    name = re.search(find, filename).group(0)
+    return name
 
 class GateKeeperLoader(object):
     """
@@ -145,7 +161,7 @@ class GateKeeperLoader(object):
             relpath(filepath, getsyssitepackages())\
             )[0].replace(os.sep, '.')
 
-        basename = fullname.split('.')[0].rstrip('0123456789-')
+        basename = filename_to_module(fullname)
         if basename not in allowed_modules:
             if remember_blocks:
                 blocked_imports.add(fullname)
@@ -207,6 +223,7 @@ class GatekeeperFinder(object):
                 else:
                     raise ImportError()
             except ImportError:
+                logger.debug("not found in %s", other_paths)
                 # Not in site packages, pass
                 return
 
@@ -287,8 +304,8 @@ def spec_files():
     """
     :return: Iterator over spec files.
     """
-    sitedir=get_python_lib()
-    return glob.glob(join(sitedir, normpath('vext/specs/*.vext')))
+    vext_dir=join(sys.prefix, "vext/specs")
+    return sorted(glob.glob(join(vext_dir, normpath('*.vext'))))
 
 
 def load_specs():
