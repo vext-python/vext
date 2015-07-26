@@ -91,16 +91,26 @@ def status():
     else:
         print('Not running in virtualenv [%s]' % enabled_msg)
 
-def check(vextfile):
+def check(vextname):
+    """
+    Attempt to import everything in the 'test-imports' section of
+    the vext file
+
+    :param vextfile: Which vext to check, '*' to check all
+    """
     import vext
     # not efficient ... but then there shouldn't be many of these
     for fn in vext.spec_files():
-        if os.path.splitext(os.path.basename(fn))[0] == vextfile:
+        if vextname == '*' or os.path.splitext(os.path.basename(fn))[0] == vextname:
+            print(os.path.basename(fn))
             f = vext.open_spec(open(fn))
             modules = f.get('test_import', [])
             for success, module in vext.test_imports(modules):
-                print(module + '   OK' if success else module + ' FAIL')
-            break
+                line = "import %s: %s" % (module, '[success]' if success else '[failed]')
+                print(line)
+            print('')
+            if vextname != '*':
+                break
 
 def main():
     import argparse

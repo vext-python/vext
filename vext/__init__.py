@@ -289,11 +289,13 @@ def open_spec(f):
     keys = ['modules', 'pths', 'test_import']
     data = yaml.load(f)
     parsed = dict()
+    ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
     for k in keys:
         v = data.get(k, [])
         # Items are always lists
         if isinstance(v, basestring):
-            parsed[k] = re.split(r",| ", v)
+            parsed[k] = [ m for m in re.split(r",| ", v) ]
+            #parsed[k] = re.split(pattern, v)
         else:
             parsed[k] = v
 
@@ -305,6 +307,8 @@ def test_imports(modules, py=None):
     """
     # TODO - allow passing different python to run remotely
     for module in modules:
+        if not module:
+            continue  # TODO - removeme once spec loading is fixed        
         try:
             __import__(module)
             yield True, module
