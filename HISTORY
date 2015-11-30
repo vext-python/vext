@@ -1,0 +1,18 @@
+0.4.1
+-----
+
+Initial support for install_requires.
+Cleanup setup.py for all the supported vexts.
+
+
+0.4.1
+-----
+
+Fixes to this and subpackages for setuptools changes, change location
+.vext files are installed to.
+
+
+0.4.0
+-----
+
+Lots of tests to not break things if running as root.
