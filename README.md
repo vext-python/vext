@@ -95,7 +95,9 @@ test_import:
     # To check if the install worked
     gtk, pygtk
 
-# move glib and gobject to their own vexts
+install_hint:
+   This message will be displayed if the system dependencies
+   are not installed.
 
 # pygtk.pth does most of the initialisation of pygtk
 pths:
