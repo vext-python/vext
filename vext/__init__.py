@@ -331,6 +331,7 @@ def load_specs():
     last_error=None
 
     for fn in spec_files():
+        logger.debug(fn)
         if fn in bad_specs:
             # Don't try and load the same bad spec twice
             continue
