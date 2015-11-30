@@ -26,6 +26,8 @@ These can be installed using pip as long as corresponding package is installed i
 
   vext.pyqt4
 
+  vext.pyqt5
+
 
 Blerb
 =====

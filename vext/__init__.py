@@ -1,4 +1,3 @@
-import collections
 import glob
 import imp
 import logging
@@ -286,7 +285,7 @@ def open_spec(f):
     pths    - list of .pth files to load
     """
     import yaml
-    keys = ['modules', 'pths', 'test_import']
+    keys = ['modules', 'pths', 'test_import', 'install_hints']
     data = yaml.load(f)
     parsed = dict()
     ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
@@ -321,7 +320,7 @@ def spec_files():
     """
     :return: Iterator over spec files.
     """
-    vext_dir=join(sys.prefix, "vext/specs")
+    vext_dir=join(sys.prefix, "share/vext/specs")
     return sorted(glob.glob(join(vext_dir, normpath('*.vext'))))
 
 
@@ -332,6 +331,7 @@ def load_specs():
     last_error=None
 
     for fn in spec_files():
+        print(fn)
         if fn in bad_specs:
             # Don't try and load the same bad spec twice
             continue

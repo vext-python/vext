@@ -2,7 +2,7 @@ import logging
 
 from setuptools.command import install_lib
 from distutils import sysconfig
-
+from vext import open_spec
 
 def add_vext(vext_file):
     """
@@ -13,19 +13,25 @@ def add_vext(vext_file):
     return (dest_dir, [vext_file])
 
 
-def check_installable(vext):
+def check_sysdeps(*vext_files):
     """
     Check that imports in 'test_imports' succeed
-    otherwise display message in 'install_hint'
+    otherwise display message in 'install_hints'
     """
-    install_hint = vext.get('install_hint', 'Failed')
-    for m in vext.get('test_import', '').split():
-        try:
-            __import__(m)
-        except:
-            logging.warning(install_hint)
-            return False    
-    return True
+    for vext_file in vext_files:
+        success = True
+        with open(vext_file) as f:
+            vext = open_spec(f)
+            install_hint = " ".join(vext.get('install_hints', ['System dependencies not found']))
+            for m in vext.get('test_import', ''):
+                try:
+                    if m:
+                        __import__(m)
+                except ImportError:
+                    print(install_hint)
+                    success = False
+                    break
+    return success
 
 
 class VextInstallLib(install_lib.install_lib):

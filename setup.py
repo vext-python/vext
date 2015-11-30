@@ -6,6 +6,8 @@ import pkg_resources
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
+MIN_SETUPTOOLS = "18.0"
+
 def upgrade_setuptools():
     """ 
     setuptools 12.2 can trigger a really nasty bug
@@ -15,7 +17,7 @@ def upgrade_setuptools():
     # Note - I tried including the higher version in
     # setup_requires, but was still able to trigger
     # the bug. - stu.axon
-    MIN_SETUPTOOLS = "14.1"
+    global MIN_SETUPTOOLS
     r = None
     try:
         r = pkg_resources.require(["setuptools"])[0]
@@ -31,10 +33,18 @@ def upgrade_setuptools():
 
 if "install" in sys.argv:
     upgrade_setuptools()
+    reload(pkg_resources)
+    try:
+        r = pkg_resources.require(["setuptools"])[0]
+        print "setuptools version: %s" % r.version 
+    except DistributionNotFound:
+        # ok, setuptools will be installed later
+        print "setuptools not found."
+        sys.exit(1)
+
 
 
 import subprocess
-import sys
 
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath, relpath
@@ -111,7 +121,7 @@ setup(
     },
 
     name='vext',
-    version='0.4.1',
+    version='0.4.2',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
@@ -142,7 +152,7 @@ setup(
     keywords='setuptools development',
     packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
 
-    setup_requires=["setuptools>=15.0.1"],
+    setup_requires=["setuptools>=18.0.1"],
     install_requires=["pyyaml==3.11"],
 
     # Install the import hook
