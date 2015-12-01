@@ -5,7 +5,7 @@ from distutils.sysconfig import get_python_lib
 from genericpath import isfile
 import inspect
 import os
-from os.path import basename, join, normpath
+from os.path import basename, join, normpath, realpath
 import subprocess
 import sys
 from textwrap import dedent
@@ -91,7 +91,7 @@ def findsyspy():
     if not in_venv():
         return sys.executable
 
-    python = basename(sys.executable)
+    python = basename(realpath(sys.executable))
     with open(orig_prefix) as op:
         prefix = op.read()
 
