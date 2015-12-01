@@ -36,7 +36,7 @@ if os.name == 'nt':
     # Windows needs environment variables + paths to be strings
     env_t = str
 else:
-    pass
+    env_t = unicode
 
 
 def addpackage(sitedir, pthfile, known_dirs=None):
@@ -72,9 +72,6 @@ def addpackage(sitedir, pthfile, known_dirs=None):
         site.addpackage(sitedir, pthfile, known_dirs)
     else:
         logging.debug("pth file '%s' not found")
-
-
-env_t = unicode
 
 
 class VextError(Exception):
