@@ -2,7 +2,8 @@ import logging
 
 from distutils import sysconfig
 from os.path import join
-from vext import open_spec
+from vext.gatekeeper import open_spec
+
 
 def add_vext(vext_file):
     """

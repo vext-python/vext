@@ -4,6 +4,8 @@ SIP is the build system for Qt
 This helper, enables us to find qt5, at least on Linux
 """
 import vext
+import vext.env
+
 
 def extra_paths():
     import ast
@@ -15,7 +17,7 @@ def extra_paths():
     #        the sip directory.
     dirs = {}
     try:
-        @vext.run_in_syspy
+        @vext.env.run_in_syspy
         def run():
             import sipconfig
             config = sipconfig.Configuration()

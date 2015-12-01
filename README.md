@@ -185,6 +185,10 @@ installed but not vext.pygtk
 Environment Variables
 =====================
 
+```VEXT_DEBUG_LOG=1``` enables extra debugging.
+```VEXT_LOG_BLOCKS=1``` store blocked imports in vext.blocked_imports
+
+
 Logging Blocked Imports
 -----------------------
 To see which modules Vext is blocking set VEXT_LOG_BLOCKS instead of
