@@ -100,17 +100,25 @@ def check(vextname):
     """
     import vext
     # not efficient ... but then there shouldn't be many of these
+    check_passed = True
+    was_checked = False
     for fn in vext.spec_files():
         if vextname == '*' or os.path.splitext(os.path.basename(fn))[0] == vextname:
+            was_checked = True
             print(os.path.basename(fn))
             f = vext.open_spec(open(fn))
             modules = f.get('test_import', [])
             for success, module in vext.test_imports(modules):
+                if not success:
+                    check_passed = False
                 line = "import %s: %s" % (module, '[success]' if success else '[failed]')
                 print(line)
             print('')
             if vextname != '*':
                 break
+    if not was_checked:
+        print('No vext matching %s found.' % vextname)
+    return check_passed and was_checked
 
 def main():
     import argparse
@@ -124,6 +132,7 @@ def main():
     # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')
 
     args = parser.parse_args()
+    err_level = 0
 
     if args.list:
         status()
@@ -135,9 +144,11 @@ def main():
     elif args.status:
         status()
     elif args.check:
-        check(args.check)
+        if not check(args.check):
+            err_level = 1
     else:
         status()
         print()
         parser.print_help()
+    sys.exit(err_level)
 
