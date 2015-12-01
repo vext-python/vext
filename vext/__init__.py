@@ -1,15 +1,18 @@
 import glob
 import imp
+import inspect
 import logging
 import os
 import re
 import site
 import subprocess
 import sys
+from textwrap import dedent
 import vext.registry
 
 from distutils.sysconfig import get_python_lib
 from os.path import abspath, basename, join, isdir, isfile, normpath, splitext, relpath
+from vext.helpers import get_extra_path
 
 logger = logging.getLogger("vext")
 if "VEXT_DEBUG_LOG" in os.environ:
@@ -56,9 +59,25 @@ else:
     env_t = unicode
 
 
-class VextException(Exception):
+class VextError(Exception):
     def __init__(*args, **kwargs):
         Exception.__init__(*args, **kwargs)
+
+def run_in_syspy(f):
+    """
+    Decorator to run a function in the system python
+
+    :param f:
+    :return:
+    """
+    code_lines = inspect.getsource(f).splitlines()
+    code = dedent("\n".join(code_lines[2:]))
+    env = os.environ
+    python = findsyspy()
+    cmd = [python, '-c', code]
+    def run():
+        return subprocess.check_output(cmd, env=env).decode('utf-8')
+    return run
 
 
 def findsyspy():
@@ -68,8 +87,8 @@ def findsyspy():
     if not in_venv():
         return sys.executable
 
-    python=basename(sys.executable)
-    with open( orig_prefix ) as op:
+    python = basename(sys.executable)
+    with open(orig_prefix) as op:
         prefix = op.read()
 
         for folder in os.environ['PATH'].split(os.pathsep):
@@ -77,8 +96,6 @@ def findsyspy():
                 folder.startswith(prefix) and\
                 isfile(join(folder, python)):
                 return join(folder, python)
-
-
 
 
 def in_venv():
@@ -104,17 +121,17 @@ def in_venv():
     else:
         # Find first python in path ... if its not this one,
         # ...we are in a different python
-        python=basename(sys.executable)
+        python = basename(sys.executable)
         for p in os.environ['PATH'].split(os.pathsep):
             py_path = join(p, python)
             if isfile(py_path):
                 logger.debug("in_venv py_at [%s] return: %s", (py_path, sys.executable != py_path))
-                _in_venv=sys.executable != py_path
+                _in_venv = sys.executable != py_path
                 break
-    
+
     return _in_venv
 
-    
+
 def getsyssitepackages():
     """
     Get site-packages from system python
@@ -124,12 +141,14 @@ def getsyssitepackages():
         if not in_venv():
             _syssitepackages = get_python_lib()
             return _syssitepackages
-        env = os.environ
-        python = findsyspy()
-        code = 'from distutils.sysconfig import get_python_lib; print(get_python_lib())'
-        cmd = [python, '-c', code]
 
-        _syssitepackages = subprocess.check_output(cmd, env=env).decode('utf-8').splitlines()[0]
+        @run_in_syspy
+        def run():
+            from distutils.sysconfig import get_python_lib
+            print(get_python_lib())
+
+        output = run()
+        _syssitepackages = output.splitlines()[0]
     return _syssitepackages
 
 def filename_to_module(filename):
@@ -201,7 +220,7 @@ class GatekeeperFinder(object):
             raise ImportError()
 
     def find_module(self, fullname, path=None):
-        if fullname in sys.modules: 
+        if fullname in sys.modules:
             return sys.modules[fullname]
 
         sitedir = getsyssitepackages()
@@ -247,7 +266,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                 else:
                     p_rel = join(sitedir, line)
                     p_abs = abspath(line)
-                    if isdir(p_rel):                        
+                    if isdir(p_rel):
                         os.environ['PATH'] += env_t(os.pathsep + p_rel)
                         sys.path.append(p_rel)
                         added_dirs.add(p_rel)
@@ -285,7 +304,7 @@ def open_spec(f):
     pths    - list of .pth files to load
     """
     import yaml
-    keys = ['modules', 'pths', 'test_import', 'install_hints']
+    keys = ['modules', 'pths', 'test_import', 'install_hints', 'extra_paths']
     data = yaml.load(f)
     parsed = dict()
     ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
@@ -314,7 +333,6 @@ def test_imports(modules, py=None):
         except:
             yield False, module
 
-        
 
 def spec_files():
     """
@@ -326,7 +344,7 @@ def spec_files():
 
 def load_specs():
     global added_dirs
-    
+
     bad_specs = set()
     last_error=None
 
@@ -341,6 +359,16 @@ def load_specs():
 
             for module in spec['modules']:
                 allowed_modules.add(module)
+
+            for path_name in spec.get('extra_paths', []):
+                extra_path = get_extra_path(path_name)
+                if isdir(extra_path):
+                    os.environ['PATH'] += env_t(os.pathsep + extra_path)
+                    sys.path.append(extra_path)
+                    added_dirs.add(extra_path)
+                else:
+                    logger.warn("Could not add extra path: {0}".format(extra_path))
+
 
             sys_sitedir = getsyssitepackages()
             for pth in [ pth for pth in spec['pths'] or [] if pth]:
@@ -387,6 +415,6 @@ def install_importer():
             logger.info(str(e))
             if logger.getEffectiveLevel() == logging.DEBUG:
                 raise
-        
+
         logging.debug("importer installed")
         return True
