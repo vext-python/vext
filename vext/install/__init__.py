@@ -47,7 +47,8 @@ def check_sysdeps(*vext_files):
             if logger.level == logging.DEBUG:
                 for k, v in result.keys:
                     logger.debug("%s: %s", k, v)
-            elif not all(result.values()):
+            if not all(result.values()):
+                success = False
                 print(install_hint)
     if success:
         print("OK")
