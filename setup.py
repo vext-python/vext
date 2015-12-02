@@ -156,7 +156,9 @@ setup(
     packages=[
         'vext',
         'vext.cmdline',
+        'vext.env',
         'vext.helpers',
+        'vext.gatekeeper',
         'vext.registry',
         'vext.install',
     ],
