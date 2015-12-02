@@ -128,7 +128,7 @@ setup(
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
-    description='Use system python packages in a virtualenv',
+    description='Use system python packages from a virtualenv',
     long_description=long_description,
     url='https://github.com/stuaxo/vext',
     author='Stuart Axon',
