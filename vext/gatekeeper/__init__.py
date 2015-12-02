@@ -3,7 +3,6 @@ GateKeeper finder / loader implementations imported from here.
 
 Things change quite a lot in python3.5 where imp is deprecated.
 """
-from genericpath import isdir, isfile
 import glob
 import imp
 import logging
@@ -11,6 +10,8 @@ import os
 import re
 import site
 import sys
+
+from genericpath import isdir, isfile
 from os.path import join, abspath, splitext, relpath, normpath
 
 from vext.env import getsyssitepackages, in_venv
@@ -251,6 +252,7 @@ def load_specs():
             spec = open_spec(open(fn))
 
             for module in spec['modules']:
+                logger.debug("allow module: %s", module)
                 allowed_modules.add(module)
 
             for path_name in spec.get('extra_paths', []):
@@ -265,6 +267,7 @@ def load_specs():
             sys_sitedir = getsyssitepackages()
             for pth in [pth for pth in spec['pths'] or [] if pth]:
                 try:
+                    logger.debug("open pth: %s", pth)
                     pth_file = join(sys_sitedir, pth)
                     addpackage(sys_sitedir, pth_file, added_dirs)
                     init_path()  # TODO

@@ -8,7 +8,6 @@ import vext.env
 
 
 def extra_paths():
-    import ast
     """
     :return: extra paths
     """
@@ -24,9 +23,8 @@ def extra_paths():
             dirs = {
                 "sip.default_sip_dir": config.default_sip_dir,
             }
-            print(dirs)
-        output = run()
-        dirs = ast.literal_eval(output)
+            return dirs
+        dirs = run()
         return dirs
     except ImportError:
         return dirs

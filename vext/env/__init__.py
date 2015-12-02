@@ -3,6 +3,8 @@ Utility functions for handling the python environment (virtual or otherwise)
 """
 from distutils.sysconfig import get_python_lib
 from genericpath import isfile
+
+import ast
 import inspect
 import os
 from os.path import basename, join, normpath, realpath
@@ -19,14 +21,25 @@ def run_in_syspy(f):
     :param f:
     :return:
     """
+    fname = f.__name__
     code_lines = inspect.getsource(f).splitlines()
-    code = dedent("\n".join(code_lines[2:]))
+
+    code = dedent("\n".join(code_lines[1:]))  # strip this decorator
+
+    # add call to the function and print it's result
+    code += dedent("""\n
+        result = {fname}()
+        print("%r" % result)
+    """).format(fname=fname)
+
     env = os.environ
     python = findsyspy()
     cmd = [python, '-c', code]
 
     def run():
-        return subprocess.check_output(cmd, env=env).decode('utf-8')
+        output = subprocess.check_output(cmd, env=env).decode('utf-8')
+        result = ast.literal_eval(output)
+        return result
     return run
 
 
@@ -77,10 +90,11 @@ def getsyssitepackages():
         @run_in_syspy
         def run():
             from distutils.sysconfig import get_python_lib
-            print(get_python_lib())
+            return get_python_lib()
 
         output = run()
         _syssitepackages = output.splitlines()[0]
+        logger.debug("system site packages: %s", _syssitepackages)
     return _syssitepackages
 
 
