@@ -3,7 +3,9 @@ import os
 import re
 import sys
 
-from vext import in_venv
+from vext.env import in_venv
+import vext.gatekeeper
+
 
 def requires_venv(f):
     def run():
@@ -12,27 +14,32 @@ def requires_venv(f):
             sys.exit(1)
         else:
             f()
+
     return run
 
+
 def list_vexts():
-    from vext import spec_files
+    from vext.gatekeeper import spec_files
+
     for fn in spec_files():
         print(os.path.basename(fn))
+
 
 @requires_venv
 def enable():
     """
     Uncomment any lines that start with #import in the .pth file
     """
-    from vext import vext_pth    
+    from vext import vext_pth
+
     _lines = []
     with open(vext_pth, mode='r') as f:
         for line in f.readlines():
             if line.startswith('#') and line[1:].lstrip().startswith('import '):
-                _lines.append( line[1:].lstrip() )
+                _lines.append(line[1:].lstrip())
             else:
-                _lines.append( line )
-    
+                _lines.append(line)
+
     try:
         os.unlink('%s.tmp' % vext_pth)
     except:
@@ -48,6 +55,7 @@ def enable():
 
     os.rename(vext_pth, '%s~' % vext_pth)
     os.rename('%s.tmp' % vext_pth, vext_pth)
+
 
 @requires_venv
 def disable():
@@ -55,19 +63,20 @@ def disable():
     Comment any lines that start with import in the .pth file
     """
     from vext import vext_pth
+
     _lines = []
     with open(vext_pth, mode='r') as f:
         for line in f.readlines():
             if not line.startswith('#') and line.startswith('import '):
-                _lines.append( '# %s' % line )
+                _lines.append('# %s' % line)
             else:
-                _lines.append( line )
+                _lines.append(line)
 
     try:
         os.unlink('%s.tmp' % vext_pth)
     except:
         pass
-    
+
     with open('%s.tmp' % vext_pth, mode='w+') as f:
         f.writelines(_lines)
 
@@ -79,17 +88,20 @@ def disable():
     os.rename(vext_pth, '%s~' % vext_pth)
     os.rename('%s.tmp' % vext_pth, vext_pth)
 
+
 def status():
-    from vext import GatekeeperFinder
+    from vext.gatekeeper import GatekeeperFinder
+
     if GatekeeperFinder.PATH_TRIGGER in sys.path:
         enabled_msg = 'enabled'
     else:
         enabled_msg = 'disabled'
-    
+
     if in_venv():
         print('Running in virtualenv [%s]' % enabled_msg)
     else:
         print('Not running in virtualenv [%s]' % enabled_msg)
+
 
 def check(vextname):
     """
@@ -102,13 +114,13 @@ def check(vextname):
     # not efficient ... but then there shouldn't be many of these
     check_passed = True
     was_checked = False
-    for fn in vext.spec_files():
+    for fn in vext.gatekeeper.spec_files():
         if vextname == '*' or os.path.splitext(os.path.basename(fn))[0] == vextname:
             was_checked = True
             print(os.path.basename(fn))
-            f = vext.open_spec(open(fn))
+            f = vext.gatekeeper.open_spec(open(fn))
             modules = f.get('test_import', [])
-            for success, module in vext.test_imports(modules):
+            for success, module in vext.gatekeeper.test_imports(modules):
                 if not success:
                     check_passed = False
                 line = "import %s: %s" % (module, '[success]' if success else '[failed]')
@@ -119,6 +131,7 @@ def check(vextname):
     if not was_checked:
         print('No vext matching %s found.' % vextname)
     return check_passed and was_checked
+
 
 def main():
     import argparse
@@ -151,4 +164,3 @@ def main():
         print()
         parser.print_help()
     sys.exit(err_level)
-

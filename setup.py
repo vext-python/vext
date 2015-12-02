@@ -1,5 +1,5 @@
-import os
-import subprocess
+from __future__ import print_function
+
 import sys
 import pkg_resources
 
@@ -7,6 +7,12 @@ from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
 MIN_SETUPTOOLS = "18.0"
+
+try:
+    reload
+except NameError:
+    # python 3
+    from imp import reload
 
 def upgrade_setuptools():
     """ 
@@ -31,6 +37,7 @@ def upgrade_setuptools():
         print("Upgrading setuptools...")
         subprocess.call("pip install 'setuptools>=%s'" % MIN_SETUPTOOLS, shell=True)
 
+
 if "install" in sys.argv:
     upgrade_setuptools()
     reload(pkg_resources)
@@ -42,8 +49,6 @@ if "install" in sys.argv:
         print("setuptools not found.")
         sys.exit(1)
 
-
-
 import subprocess
 
 from glob import glob
@@ -51,7 +56,6 @@ from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
 from textwrap import dedent
 
-from distutils import sysconfig
 from distutils.command.build import build
 
 from setuptools import setup
@@ -60,7 +64,7 @@ from setuptools.command.develop import develop
 from setuptools.command.easy_install import easy_install
 
 here = normpath(abspath(dirname(__file__)))
-    
+
 
 class BuildWithPTH(build):
     def run(self):
@@ -85,6 +89,7 @@ class DevelopWithPTH(develop):
         dest = join(self.install_dir, basename(path))
         self.copy_file(path, dest)
 
+
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
     CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info ./__pycache__'.split(' ')
@@ -93,8 +98,10 @@ class CleanCommand(Command):
 
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         global here
 
@@ -108,7 +115,8 @@ class CleanCommand(Command):
                 print('removing %s' % relpath(path))
                 rmtree(path)
 
-long_description=dedent("""
+
+long_description = dedent("""
     Use system python packages in virtualenv (for packages that dont work in virtualenv).
 """)
 
@@ -121,11 +129,11 @@ setup(
     },
 
     name='vext',
-    version='0.4.2',
+    version='0.4.99',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
-    description='Use system python packages in a virtualenv',
+    description='Use system python packages from a virtualenv',
     long_description=long_description,
     url='https://github.com/stuaxo/vext',
     author='Stuart Axon',
@@ -150,19 +158,27 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     keywords='setuptools development',
-    packages=['vext', 'vext.registry', 'vext.install', 'vext.cmdline'],
+    packages=[
+        'vext',
+        'vext.cmdline',
+        'vext.env',
+        'vext.helpers',
+        'vext.gatekeeper',
+        'vext.registry',
+        'vext.install',
+    ],
 
     setup_requires=["setuptools>=18.0.1"],
     install_requires=["pyyaml==3.11"],
 
     # Install the import hook
-    #data_files=[
+    # data_files=[
     #    (site_packages_path, site_packages_files),
-    #],
+    # ],
 
-    entry_points = {
-            'console_scripts': [
-                'vext = vext.cmdline:main'
-            ]
-        },
+    entry_points={
+        'console_scripts': [
+            'vext = vext.cmdline:main'
+        ]
+    },
 )
