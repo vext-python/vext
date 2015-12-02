@@ -36,10 +36,10 @@ if "install" in sys.argv:
     reload(pkg_resources)
     try:
         r = pkg_resources.require(["setuptools"])[0]
-        print "setuptools version: %s" % r.version 
+        print("setuptools version: %s" % r.version)
     except DistributionNotFound:
         # ok, setuptools will be installed later
-        print "setuptools not found."
+        print("setuptools not found.")
         sys.exit(1)
 
 
