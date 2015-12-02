@@ -13,7 +13,6 @@ import sys
 from textwrap import dedent
 from vext import logger
 
-
 def run_in_syspy(f):
     """
     Decorator to run a function in the system python
@@ -28,19 +27,21 @@ def run_in_syspy(f):
 
     # add call to the function and print it's result
     code += dedent("""\n
-        result = {fname}()
+        import sys
+        args = sys.argv[1:]
+        result = {fname}(*args)
         print("%r" % result)
     """).format(fname=fname)
 
     env = os.environ
     python = findsyspy()
-    cmd = [python, '-c', code]
 
-    def run():
+    def call_f(*args):
+        cmd = [python, '-c', code] + list(args)
         output = subprocess.check_output(cmd, env=env).decode('utf-8')
         result = ast.literal_eval(output)
         return result
-    return run
+    return call_f
 
 
 def in_venv():
@@ -88,7 +89,7 @@ def getsyssitepackages():
             return _syssitepackages
 
         @run_in_syspy
-        def run():
+        def run(*args):
             from distutils.sysconfig import get_python_lib
             return get_python_lib()
 

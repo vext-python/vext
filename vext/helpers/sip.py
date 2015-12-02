@@ -17,7 +17,7 @@ def extra_paths():
     dirs = {}
     try:
         @vext.env.run_in_syspy
-        def run():
+        def run(*args):
             import sipconfig
             config = sipconfig.Configuration()
             dirs = {

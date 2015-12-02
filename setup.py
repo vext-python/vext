@@ -8,6 +8,11 @@ from pkg_resources import DistributionNotFound
 
 MIN_SETUPTOOLS = "18.0"
 
+try:
+    reload
+except NameError:
+    # python 3
+    from imp import reload
 
 def upgrade_setuptools():
     """ 
