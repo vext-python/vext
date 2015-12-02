@@ -115,11 +115,6 @@ class CleanCommand(Command):
                 print('removing %s' % relpath(path))
                 rmtree(path)
 
-
-long_description = dedent("""
-    Use system python packages in virtualenv (for packages that dont work in virtualenv).
-""")
-
 setup(
     cmdclass={
         'build': BuildWithPTH,
@@ -129,12 +124,17 @@ setup(
     },
 
     name='vext',
-    version='0.4.99.1',
+    version='0.4.99.2',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
     description='Use system python packages from a virtualenv',
-    long_description=long_description,
+    long_description=dedent("""
+        Use specific system python packages from virtualenv with --system-site-packages.
+
+        Supports:
+        pygtk, gi (gtk3), qt4, qt5, panda3d, vtk, wx
+        """),
     url='https://github.com/stuaxo/vext',
     author='Stuart Axon',
     author_email='stuaxo2@yahoo.com',

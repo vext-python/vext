@@ -44,7 +44,7 @@ def check_sysdeps(*vext_files):
             modules = vext.get('test_import', '')
             logger.debug("%s test imports of: %s", vext_file, modules)
             result = run(*modules)
-            if logger.level == logging.DEBUG:
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
                 for k, v in result.keys:
                     logger.debug("%s: %s", k, v)
             if not all(result.values()):
