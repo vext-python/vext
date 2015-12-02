@@ -9,7 +9,7 @@ if "VEXT_DEBUG_LOG" in environ:
 
 vext_pth = join(get_python_lib(), 'vext_importer.pth')
 
-llogger = logging.getLogger("vext")
+logger = logging.getLogger("vext")
 
 def install_importer():
     logger.debug("install_importer has been moved to gatekeeper module")
