@@ -187,7 +187,9 @@ Environment Variables
 
 ```VEXT_DEBUG_LOG=1``` enables extra debugging.
 
-```VEXT_LOG_BLOCKS=1``` store blocked imports in vext.blocked_imports
+```VEXT_LOG_BLOCKS=1``` store blocked imports in vext.blocked_imports.
+
+```VEXT_DISABLED=1``` disable vext when set.
 
 
 Logging Blocked Imports

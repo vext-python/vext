@@ -2,7 +2,7 @@
 -----
 
 Add support for multiple site directories.
-
+Add env var VEXT_DISABLED.
 
 0.4.99
 ------

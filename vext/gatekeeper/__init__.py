@@ -23,6 +23,7 @@ remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
 blocked_imports = registry.blocked_imports
 allowed_modules = registry.allowed_modules
 added_dirs = registry.added_dirs
+disable_vext = bool(os.environ.get('VEXT_DISABLED', False))
 
 if 'VEXT_ALLOWED_MODULES' in os.environ:
     allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
@@ -302,6 +303,10 @@ def install_importer():
     logging.debug('install_importer')
     if not in_venv():
         logging.debug('No virtualenv active py:[%s]', sys.executable)
+        return False
+
+    if disable_vext:
+        logging.debug('Vext disabled by environment variable')
         return False
 
     if GatekeeperFinder.PATH_TRIGGER not in sys.path:
