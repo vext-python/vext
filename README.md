@@ -245,5 +245,6 @@ need to be specified in the .vext file.
 Thanks
 ======
 ruamel/venvgtk - for showing something like this is possible
+
 pymotw article on modules and imports
 
