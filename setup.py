@@ -1,12 +1,14 @@
 from __future__ import print_function
 
 import sys
+import os
 import pkg_resources
 
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
 MIN_SETUPTOOLS = "18.0"
+os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
 
 try:
     reload
