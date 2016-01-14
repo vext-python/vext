@@ -94,8 +94,9 @@ class GateKeeperLoader(object):
     Only allow known modules to import from the system site packages
     """
 
-    def __init__(self, module_info):
+    def __init__(self, module_info, sitedir):
         self.module_info = module_info
+        self.sitedir = sitedir
 
     def load_module(self, name):
         """
@@ -106,7 +107,7 @@ class GateKeeperLoader(object):
         # Get the name relative to SITEDIR ..
         filepath = self.module_info[1]
         fullname = splitext( \
-            relpath(filepath, getsyssitepackages()) \
+            relpath(filepath, self.sitedir) \
             )[0].replace(os.sep, '.')
 
         basename = filename_to_module(fullname)
@@ -152,9 +153,9 @@ class GatekeeperFinder(object):
         if fullname in sys.modules:
             return sys.modules[fullname]
 
-        sitedir = getsyssitepackages()
+        sitedirs = getsyssitepackages()
         # Check paths other than system sitepackages first
-        other_paths = [p for p in sys.path if p not in [sitedir, GatekeeperFinder.PATH_TRIGGER]] + ['.']
+        other_paths = [p for p in sys.path if p not in sitedirs + [GatekeeperFinder.PATH_TRIGGER, '.']]
         try:
             module_info = imp.find_module(fullname, other_paths)
             if module_info:
@@ -163,15 +164,19 @@ class GatekeeperFinder(object):
         except ImportError:
             try:
                 # Now check if in site packages and needs gatekeeping
-                module_info = imp.find_module(fullname, [sitedir, self.path_entry])
-                if module_info:
-                    logger.debug("found module %s in sitedir or subdirectory", fullname)
-                    return GateKeeperLoader(module_info)
-                else:
-                    raise ImportError()
+                for sitedir in sitedirs:
+                    try:
+                        module_info = imp.find_module(fullname, [sitedir, self.path_entry])
+                        if module_info:
+                            logger.debug("found module %s in sitedir or subdirectory", fullname)
+                            return GateKeeperLoader(module_info, sitedir)
+                    except ImportError:
+                        logger.debug("%s not found in: %s", fullname, os.pathsep.join(other_paths))
+                        continue
             except ImportError:
-                logger.debug("%s not found in: %s", fullname, os.pathsep.join(other_paths))
-                # Not in site packages, pass
+                ### TODO
+                # Need to debug why this catch is needed, removing it stops things working...
+                # something is subtly weird here.
                 return
 
 
@@ -264,17 +269,18 @@ def load_specs():
                 else:
                     logger.warn("Could not add extra path: {0}".format(extra_path))
 
-            sys_sitedir = getsyssitepackages()
-            for pth in [pth for pth in spec['pths'] or [] if pth]:
-                try:
-                    logger.debug("open pth: %s", pth)
-                    pth_file = join(sys_sitedir, pth)
-                    addpackage(sys_sitedir, pth_file, added_dirs)
-                    init_path()  # TODO
-                except IOError as e:
-                    # Path files are optional..
-                    logging.debug('No pth found at %s', pth_file)
-                    pass
+            sys_sitedirs = getsyssitepackages()
+            for sys_sitedir in sys_sitedirs:
+                for pth in [pth for pth in spec['pths'] or [] if pth]:
+                    try:
+                        logger.debug("open pth: %s", pth)
+                        pth_file = join(sys_sitedir, pth)
+                        addpackage(sys_sitedir, pth_file, added_dirs)
+                        init_path()  # TODO
+                    except IOError as e:
+                        # Path files are optional..
+                        logging.debug('No pth found at %s', pth_file)
+                        pass
 
         except Exception as e:
             bad_specs.add(fn)

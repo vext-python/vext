@@ -1,4 +1,17 @@
-0.4.1
+0.5.0
+-----
+
+Add support for multiple site directories.
+
+
+0.4.99
+------
+
+Lots of debugging for py3, doesn't work 100% yet.
+pyqt5 added.
+
+
+0.4.2
 -----
 
 Initial support for install_requires.

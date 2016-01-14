@@ -80,7 +80,7 @@ def in_venv():
 
 def getsyssitepackages():
     """
-    Get site-packages from system python
+    :return: list of site-packages from system python
     """
     global _syssitepackages
     if not _syssitepackages:
@@ -90,11 +90,11 @@ def getsyssitepackages():
 
         @run_in_syspy
         def run(*args):
-            from distutils.sysconfig import get_python_lib
-            return get_python_lib()
+            import site
+            return site.getsitepackages()
 
         output = run()
-        _syssitepackages = output.splitlines()[0]
+        _syssitepackages = output
         logger.debug("system site packages: %s", _syssitepackages)
     return _syssitepackages
 
