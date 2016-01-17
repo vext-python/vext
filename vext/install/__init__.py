@@ -44,8 +44,6 @@ def check_sysdeps(*vext_files):
             if not all(result.values()):
                 success = False
                 print(install_hint)
-    if success:
-        print("OK")
     return success
 
 
@@ -55,9 +53,11 @@ def install_vexts(vext_files):
 
     (PIP7 seems to remove data_files so we recreate something similar here)
     """
+    if not check_sysdeps(vext_files):
+        return
+
     spec_dir = join(prefix, 'share/vext/specs')
     try:
-        print("makedirs ", spec_dir)
         makedirs(spec_dir)
     except OSError:
         pass
