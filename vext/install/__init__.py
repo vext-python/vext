@@ -1,20 +1,14 @@
 import logging
 
-from distutils import sysconfig
-from os.path import join
+from os.path import basename, join, normpath
+from os import makedirs
+
+from shutil import copyfile
+from sys import prefix
 
 from vext.env import run_in_syspy
 from vext.gatekeeper import open_spec
 from vext import logger
-
-
-def add_vext(vext_file):
-    """
-    Create an entry for 'setup.py': 'data_files' that will
-    install a vext
-    """
-    dest_dir = join(sysconfig.get_python_lib(), 'vext/specs')
-    return (dest_dir, [vext_file])
 
 
 def check_sysdeps(*vext_files):
@@ -53,3 +47,24 @@ def check_sysdeps(*vext_files):
     if success:
         print("OK")
     return success
+
+
+def install_vexts(vext_files):
+    """
+    copy vext_file to sys.prefix + '/share/vext/specs'
+
+    (PIP7 seems to remove data_files so we recreate something similar here)
+    """
+    spec_dir = join(prefix, 'share/vext/specs')
+    try:
+        print("makedirs ", spec_dir)
+        makedirs(spec_dir)
+    except OSError:
+        pass
+
+    for vext_file in vext_files:
+        dest = normpath(join(spec_dir, basename(vext_file)))
+        try:
+            copyfile(vext_file, dest)
+        except IOError:
+            pass

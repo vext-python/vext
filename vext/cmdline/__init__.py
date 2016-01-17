@@ -3,7 +3,9 @@ import os
 import re
 import sys
 
+from os.path import basename, join
 from vext.env import in_venv
+from vext.install import install_vexts
 import vext.gatekeeper
 
 
@@ -103,34 +105,39 @@ def status():
         print('Not running in virtualenv [%s]' % enabled_msg)
 
 
-def check(vextname):
+def check(vext_files):
     """
-    Attempt to import everything in the 'test-imports' section of
-    the vext file
+    Attempt to import everything in the 'test-imports' section of specified
+    vext_files
 
-    :param vextfile: Which vext to check, '*' to check all
+    :param: list of vext filenames (without paths), '*' matches all.
+    :return: True if test_imports was successful from all files
     """
     import vext
     # not efficient ... but then there shouldn't be many of these
+
+    all_specs = set(vext.gatekeeper.spec_files_flat())
+    if vext_files == ['*']:
+        vext_files = all_specs
+    unknown_specs = set(vext_files) - all_specs
+    for fn in unknown_specs:
+        print("%s is not an installed vext file." % fn, file=sys.stderr)
+
+    if unknown_specs:
+        return False
+
     check_passed = True
-    was_checked = False
-    for fn in vext.gatekeeper.spec_files():
-        if vextname == '*' or os.path.splitext(os.path.basename(fn))[0] == vextname:
-            was_checked = True
-            print(os.path.basename(fn))
-            f = vext.gatekeeper.open_spec(open(fn))
-            modules = f.get('test_import', [])
-            for success, module in vext.gatekeeper.test_imports(modules):
-                if not success:
-                    check_passed = False
-                line = "import %s: %s" % (module, '[success]' if success else '[failed]')
-                print(line)
-            print('')
-            if vextname != '*':
-                break
-    if not was_checked:
-        print('No vext matching %s found.' % vextname)
-    return check_passed and was_checked
+    for fn in [join(vext.gatekeeper.spec_dir(), fn) for fn in vext_files]:
+        f = vext.gatekeeper.open_spec(open(fn))
+        modules = f.get('test_import', [])
+        for success, module in vext.gatekeeper.test_imports(modules):
+            if not success:
+                check_passed = False
+            line = "import %s: %s" % (module, '[success]' if success else '[failed]')
+            print(line)
+        print('')
+
+    return check_passed
 
 
 def main():
@@ -141,8 +148,10 @@ def main():
     parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Disable Vext loader')
     parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
-    parser.add_argument('-c', '--check', dest='check', help='[external package] Test imports for external package')
-    # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')
+    parser.add_argument('-c', '--check', dest='check', nargs='*', help='[external package] Test imports for external package')
+    # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')  # TODO
+
+    parser.add_argument('-i', '--install', dest='install', nargs='*', help='Install vext file (used during setup)')
 
     args = parser.parse_args()
     err_level = 0
@@ -159,6 +168,8 @@ def main():
     elif args.check:
         if not check(args.check):
             err_level = 1
+    elif args.install:
+        install_vexts(*args.install)
     else:
         status()
         print()

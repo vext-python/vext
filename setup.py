@@ -3,11 +3,12 @@ from __future__ import print_function
 import sys
 import os
 import pkg_resources
+import subprocess
 
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
-MIN_SETUPTOOLS = "18.0"
+MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
 
 try:
@@ -20,7 +21,7 @@ def upgrade_setuptools():
     """ 
     setuptools 12.2 can trigger a really nasty bug
     that eats all memory, so upgrade it to
-    14.1, which is known to be good.
+    18.8, which is known to be good.
     """
     # Note - I tried including the higher version in
     # setup_requires, but was still able to trigger

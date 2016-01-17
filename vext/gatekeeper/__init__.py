@@ -2,6 +2,15 @@
 GateKeeper finder / loader implementations imported from here.
 
 Things change quite a lot in python3.5 where imp is deprecated.
+
+
+Useful environment variables (Used for debug, may change)
+
+VEXT_DISABLED=1         Disable vext by not adding it to sys.path
+VEXT_LOG_BLOCKS=1       Store any blocked imports in registry.blocked_imports
+VEXT_ALLOWED_MODULES=1  Extra modules to allow
+VEXT_DEBUG_LOG=1        Debug logging
+
 """
 import glob
 import imp
@@ -12,7 +21,7 @@ import site
 import sys
 
 from genericpath import isdir, isfile
-from os.path import join, abspath, splitext, relpath, normpath
+from os.path import join, basename, abspath, splitext, relpath, normpath
 
 from vext.env import getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
@@ -24,6 +33,9 @@ blocked_imports = registry.blocked_imports
 allowed_modules = registry.allowed_modules
 added_dirs = registry.added_dirs
 disable_vext = bool(os.environ.get('VEXT_DISABLED', False))
+if hasattr(sys, 'argv') and 'setup.py' in sys.argv[0:2]:  # Somehow sys doesn't always have argv here
+    print("Running during setup - temporarily disable vext")
+    disable_vext = True  # Hack: - need a better way to disable during setup of vext itself
 
 if 'VEXT_ALLOWED_MODULES' in os.environ:
     allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
@@ -111,15 +123,15 @@ class GateKeeperLoader(object):
             relpath(filepath, self.sitedir) \
             )[0].replace(os.sep, '.')
 
-        basename = filename_to_module(fullname)
-        if basename not in allowed_modules:
+        modulename = filename_to_module(fullname)
+        if modulename not in allowed_modules:
             if remember_blocks:
                 blocked_imports.add(fullname)
             if log_blocks:
-                raise ImportError("Vext blocked import of '%s'" % basename)
+                raise ImportError("Vext blocked import of '%s'" % modulename)
             else:
                 # Standard error message
-                raise ImportError("No module named %s" % basename)
+                raise ImportError("No module named %s" % modulename)
 
         if name not in sys.modules:
             try:
@@ -151,6 +163,7 @@ class GatekeeperFinder(object):
             raise ImportError()
 
     def find_module(self, fullname, path=None):
+        # TODO Need lots of unit tests around this
         if fullname in sys.modules:
             return sys.modules[fullname]
 
@@ -158,10 +171,16 @@ class GatekeeperFinder(object):
         # Check paths other than system sitepackages first
         other_paths = [p for p in sys.path if p not in sitedirs + [GatekeeperFinder.PATH_TRIGGER, '.']]
         try:
-            module_info = imp.find_module(fullname, other_paths)
-            if module_info:
-                logger.debug("found module %s in sitedir", fullname)
-                return
+            for other_path in other_paths:
+                try:
+                    module_info = imp.find_module(fullname, other_path)
+                    if module_info:
+                        logger.debug("found module %s in other path [%s]", fullname, other_path)
+                        return
+                except ImportError:
+                    continue
+            else:
+                raise ImportError()
         except ImportError:
             try:
                 # Now check if in site packages and needs gatekeeping
@@ -169,7 +188,7 @@ class GatekeeperFinder(object):
                     try:
                         module_info = imp.find_module(fullname, [sitedir, self.path_entry])
                         if module_info:
-                            logger.debug("found module %s in sitedir or subdirectory", fullname)
+                            logger.debug("found module %s in sitedir or subdirectory [%s]", fullname, sitedir)
                             return GateKeeperLoader(module_info, sitedir)
                     except ImportError:
                         logger.debug("%s not found in: %s", fullname, os.pathsep.join(other_paths))
@@ -224,6 +243,8 @@ def open_spec(f):
 def test_imports(modules, py=None):
     """
     Iterate through test_imports and try and import them
+
+    :return: iterator of  ((success, module_name), ...)
     """
     # TODO - allow passing different python to run remotely
     for module in modules:
@@ -236,12 +257,24 @@ def test_imports(modules, py=None):
             yield False, module
 
 
+def spec_dir():
+    """
+    :return: Directory vext files are installed to
+    """
+    return join(sys.prefix, "share/vext/specs")
+
 def spec_files():
     """
     :return: Iterator over spec files.
     """
-    vext_dir = join(sys.prefix, "share/vext/specs")
-    return sorted(glob.glob(join(vext_dir, normpath('*.vext'))))
+    return sorted(glob.glob(join(spec_dir(), '*.vext')))
+
+
+def spec_files_flat():
+    """
+    :return: basenames of intalled spec files
+    """
+    return [basename(vext_file) for vext_file in spec_files()]
 
 
 def load_specs():
