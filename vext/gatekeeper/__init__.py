@@ -29,8 +29,8 @@ from vext import registry, logger
 
 log_blocks = 'VEXT_LOG_BLOCKS' in os.environ
 remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
-blocked_imports = registry.blocked_imports
-allowed_modules = registry.allowed_modules
+blocked_imports = registry.blocked_imports  # if remember_blocks is True blocked imports are added here
+allowed_modules = registry.allowed_modules  # populated by .vext files
 added_dirs = registry.added_dirs
 disable_vext = bool(os.environ.get('VEXT_DISABLED', False))
 if hasattr(sys, 'argv') and 'setup.py' in sys.argv[0:2]:  # Somehow sys doesn't always have argv here

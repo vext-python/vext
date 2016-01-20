@@ -65,7 +65,8 @@ def install_vexts(vext_files):
     for vext_file in vext_files:
         dest = normpath(join(spec_dir, basename(vext_file)))
         try:
+            logger.debug("%s > %s" % (vext_file, dest))
             copyfile(vext_file, dest)
             yield vext_file, dest
-        except IOError:
-            pass
+        except IOError as e:
+            logger.error("Could not copy %s %r" % (vext_file, e))
