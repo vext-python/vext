@@ -11,7 +11,7 @@ from vext.gatekeeper import open_spec
 from vext import logger
 
 
-def check_sysdeps(*vext_files):
+def check_sysdeps(vext_files):
     """
     Check that imports in 'test_imports' succeed
     otherwise display message in 'install_hints'
@@ -66,5 +66,6 @@ def install_vexts(vext_files):
         dest = normpath(join(spec_dir, basename(vext_file)))
         try:
             copyfile(vext_file, dest)
+            yield vext_file, dest
         except IOError:
             pass

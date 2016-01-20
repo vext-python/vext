@@ -52,8 +52,6 @@ if "install" in sys.argv:
         print("setuptools not found.")
         sys.exit(1)
 
-import subprocess
-
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
@@ -80,9 +78,9 @@ class BuildWithPTH(build):
 class EasyInstallWithPTH(easy_install):
     def run(self):
         easy_install.run(self)
-        for path in glob(join(here, 'vext_importer.pth')):
-            dest = join(self.install_dir, basename(path))
-            self.copy_file(path, dest)
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.install_dir, basename(path))
+        self.copy_file(path, dest)
 
 
 class DevelopWithPTH(develop):
@@ -127,7 +125,7 @@ setup(
     },
 
     name='vext',
-    version='0.5.2',
+    version='0.5.4',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 

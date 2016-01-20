@@ -28,7 +28,7 @@ def list_vexts():
 
 
 @requires_venv
-def enable():
+def do_enable():
     """
     Uncomment any lines that start with #import in the .pth file
     """
@@ -60,7 +60,7 @@ def enable():
 
 
 @requires_venv
-def disable():
+def do_disable():
     """
     Comment any lines that start with import in the .pth file
     """
@@ -91,7 +91,7 @@ def disable():
     os.rename('%s.tmp' % vext_pth, vext_pth)
 
 
-def status():
+def do_status():
     from vext.gatekeeper import GatekeeperFinder
 
     if GatekeeperFinder.PATH_TRIGGER in sys.path:
@@ -105,7 +105,7 @@ def status():
         print('Not running in virtualenv [%s]' % enabled_msg)
 
 
-def check(vext_files):
+def do_check(vext_files):
     """
     Attempt to import everything in the 'test-imports' section of specified
     vext_files
@@ -140,6 +140,11 @@ def check(vext_files):
     return check_passed
 
 
+def do_install_vexts(vext_files):
+    for src, dst in install_vexts(vext_files):
+        print("  %s" % src)
+
+
 def main():
     import argparse
 
@@ -157,21 +162,21 @@ def main():
     err_level = 0
 
     if args.list:
-        status()
+        do_status()
         list_vexts()
     elif args.disable:
-        disable()
+        do_disable()
     elif args.enable:
-        enable()
+        do_enable()
     elif args.status:
-        status()
+        do_status()
     elif args.check:
-        if not check(args.check):
+        if not do_check(args.check):
             err_level = 1
     elif args.install:
-        install_vexts(*args.install)
+        do_install_vexts(args.install)
     else:
-        status()
+        do_status()
         print()
         parser.print_help()
     sys.exit(err_level)
