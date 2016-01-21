@@ -62,6 +62,7 @@ from distutils.command.build import build
 from setuptools import setup
 from setuptools import Command
 from setuptools.command.develop import develop
+from setuptools.command.install import install
 from setuptools.command.easy_install import easy_install
 
 here = normpath(abspath(dirname(__file__)))
@@ -74,6 +75,12 @@ class BuildWithPTH(build):
         dest = join(self.build_lib, basename(path))
         self.copy_file(path, dest)
 
+class InstallWithPTH(install):
+    def run(self):
+        install.run(self)
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.install_lib, basename(path))
+        self.copy_file(path, dest)
 
 class EasyInstallWithPTH(easy_install):
     def run(self):
@@ -120,12 +127,13 @@ setup(
     cmdclass={
         'build': BuildWithPTH,
         'easy_install': EasyInstallWithPTH,
+        'install': InstallWithPTH,
         'develop': DevelopWithPTH,
         'clean': CleanCommand,
     },
 
     name='vext',
-    version='0.5.5',
+    version='0.5.6',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 
