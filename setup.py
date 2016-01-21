@@ -57,6 +57,8 @@ from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
 from textwrap import dedent
 
+from subprocess import call
+
 from distutils.command.build import build
 
 from setuptools import setup
@@ -71,31 +73,23 @@ here = normpath(abspath(dirname(__file__)))
 class BuildWithPTH(build):
     def run(self):
         build.run(self)
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.build_lib, basename(path))
-        self.copy_file(path, dest)
+        call(["vext", "-e"])
 
 class InstallWithPTH(install):
     def run(self):
         install.run(self)
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_lib, basename(path))
-        self.copy_file(path, dest)
+        call(["vext", "-e"])
 
 class EasyInstallWithPTH(easy_install):
     def run(self):
         easy_install.run(self)
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_dir, basename(path))
-        self.copy_file(path, dest)
+        call(["vext", "-e"])
 
 
 class DevelopWithPTH(develop):
     def run(self):
         develop.run(self)
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_dir, basename(path))
-        self.copy_file(path, dest)
+        call(["vext", "-e"])
 
 
 class CleanCommand(Command):
@@ -133,7 +127,7 @@ setup(
     },
 
     name='vext',
-    version='0.5.6',
+    version='0.5.6.3',
     # We need to have a real directory not a zip file:
     zip_safe=False,
 

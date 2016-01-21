@@ -4,10 +4,18 @@ import re
 import sys
 
 from os.path import basename, join
+from vext import vext_pth
 from vext.env import in_venv
 from vext.install import install_vexts
 import vext.gatekeeper
 
+DEFAULT_PTH_CONTENT = """\
+# Install the vext importer - dont die if vext has been uninstalled.
+#
+# Lines beginning with 'import' are executed, so import sys to get
+# going.
+import sys; exec("try:\n import vext\n vext.install_importer()\nexcept:\n pass")
+"""
 
 def requires_venv(f):
     def run():
@@ -32,31 +40,35 @@ def do_enable():
     """
     Uncomment any lines that start with #import in the .pth file
     """
-    from vext import vext_pth
-
-    _lines = []
-    with open(vext_pth, mode='r') as f:
-        for line in f.readlines():
-            if line.startswith('#') and line[1:].lstrip().startswith('import '):
-                _lines.append(line[1:].lstrip())
-            else:
-                _lines.append(line)
-
     try:
-        os.unlink('%s.tmp' % vext_pth)
-    except:
-        pass
+        _lines = []
+        with open(vext_pth, mode='r') as f:
+            for line in f.readlines():
+                if line.startswith('#') and line[1:].lstrip().startswith('import '):
+                    _lines.append(line[1:].lstrip())
+                else:
+                    _lines.append(line)
 
-    with open('%s.tmp' % vext_pth, mode='w+') as f:
-        f.writelines(_lines)
+        try:
+            os.unlink('%s.tmp' % vext_pth)
+        except:
+            pass
 
-    try:
-        os.unlink('%s~' % vext_pth)
-    except:
-        pass
+        with open('%s.tmp' % vext_pth, mode='w+') as f:
+            f.writelines(_lines)
 
-    os.rename(vext_pth, '%s~' % vext_pth)
-    os.rename('%s.tmp' % vext_pth, vext_pth)
+        try:
+            os.unlink('%s~' % vext_pth)
+        except:
+            pass
+
+        os.rename(vext_pth, '%s~' % vext_pth)
+        os.rename('%s.tmp' % vext_pth, vext_pth)
+    except IOError as e:
+        if e.errno == 2:
+            # vext file doesn't exist, recreate it.
+            with open(vext_pth, 'w') as f:
+                f.write(DEFAULT_PTH_CONTENT)
 
 
 @requires_venv
@@ -66,29 +78,33 @@ def do_disable():
     """
     from vext import vext_pth
 
-    _lines = []
-    with open(vext_pth, mode='r') as f:
-        for line in f.readlines():
-            if not line.startswith('#') and line.startswith('import '):
-                _lines.append('# %s' % line)
-            else:
-                _lines.append(line)
-
     try:
-        os.unlink('%s.tmp' % vext_pth)
-    except:
-        pass
+        _lines = []
+        with open(vext_pth, mode='r') as f:
+            for line in f.readlines():
+                if not line.startswith('#') and line.startswith('import '):
+                    _lines.append('# %s' % line)
+                else:
+                    _lines.append(line)
 
-    with open('%s.tmp' % vext_pth, mode='w+') as f:
-        f.writelines(_lines)
+        try:
+            os.unlink('%s.tmp' % vext_pth)
+        except:
+            pass
 
-    try:
-        os.unlink('%s~' % vext_pth)
-    except:
-        pass
+        with open('%s.tmp' % vext_pth, mode='w+') as f:
+            f.writelines(_lines)
 
-    os.rename(vext_pth, '%s~' % vext_pth)
-    os.rename('%s.tmp' % vext_pth, vext_pth)
+        try:
+            os.unlink('%s~' % vext_pth)
+        except:
+            pass
+
+        os.rename(vext_pth, '%s~' % vext_pth)
+        os.rename('%s.tmp' % vext_pth, vext_pth)
+    except IOError as e:
+        if e.errno == 2:  # file didn't exist == disabled
+            return
 
 
 def do_status():
