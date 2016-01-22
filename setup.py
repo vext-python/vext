@@ -9,7 +9,7 @@ import sys
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
-if "VEXT_DEBUG_LOG" in environ:
+if "VEXT_DEBUG_LOG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger("vext")
