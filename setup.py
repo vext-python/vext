@@ -1,15 +1,23 @@
 from __future__ import print_function
 
-import sys
+import logging
 import os
 import pkg_resources
 import subprocess
+import sys
 
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
+if "VEXT_DEBUG_LOG" in environ:
+    logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger("vext")
+
+
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
+version='0.5.7'
 
 try:
     reload
@@ -57,8 +65,6 @@ from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
 from textwrap import dedent
 
-from subprocess import call
-
 from distutils.command.build import build
 
 from setuptools import setup
@@ -66,30 +72,170 @@ from setuptools import Command
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.easy_install import easy_install
+from setuptools.command.install_lib import install_lib
 
 here = normpath(abspath(dirname(__file__)))
+import os
 
 
 class BuildWithPTH(build):
     def run(self):
         build.run(self)
-        call(["vext", "-e"])
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.build_lib, basename(path))
+        self.copy_file(path, dest)
 
 class InstallWithPTH(install):
     def run(self):
         install.run(self)
-        call(["vext", "-e"])
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.install_lib, basename(path))
+        self.copy_file(path, dest)
 
 class EasyInstallWithPTH(easy_install):
     def run(self):
         easy_install.run(self)
-        call(["vext", "-e"])
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.install_dir, basename(path))
+        self.copy_file(path, dest)
 
 
 class DevelopWithPTH(develop):
     def run(self):
         develop.run(self)
-        call(["vext", "-e"])
+        path = join(here, 'vext_importer.pth')
+        dest = join(self.install_dir, basename(path))
+        self.copy_file(path, dest)
+
+
+class InstallLib(install_lib):
+    #
+    # Next part is when run InstallLib is run - we need to go find
+    # any packages that depend on vext that have been installed
+    # before and install the .vext files they provide
+    #
+    def installed_packages(self):
+        """ :return: list of installed packages """
+        packages = []
+        for package in subprocess.check_output(["pip", "freeze"]).splitlines():
+            # installed package names look like Pillow==2.8.1, get the first part
+            name = package.partition("==")[0]
+            packages.append(name)
+        return packages
+
+    def package_info(self):
+        """
+        :return: list of package info on installed packages
+        """
+        import subprocess
+        # create a commandline like  pip show Pillow show
+        package_names = self.installed_packages()
+        if not package_names:
+            # No installed packages yet, so nothign to do here...
+            return []
+
+        cmdline = ["pip"]
+        for name in package_names:
+            cmdline.extend(["show", name])
+
+        output = subprocess.check_output(cmdline)
+        # parse output that looks like this example
+        """
+        ---
+        Name: Pillow
+        Version: 2.8.1
+        Location: /mnt/data/home/stu/.virtualenvs/shoebot-setup/lib/python2.7/site-packages/Pillow-2.8.1-py2.7-linux-x86_64.egg
+        Requires:
+        ---
+        Name: vext.gi
+        Version: 0.5.6.25
+        Location: /mnt/data/home/stu/.virtualenvs/shoebot-setup/lib/python2.7/site-packages/vext.gi-0.5.6.25-py2.7.egg
+        Requires: vext
+
+        """
+        results = []
+        for info in output[3:].split("---"):
+            d = {}
+            for line in info[1:].splitlines():
+                arg, _, value = line.partition(': ')
+                arg = arg.lower()
+                if arg == 'requires':
+                    value = value.split(', ')
+                d[arg] = value
+            results.append(d)
+        return results
+
+    def depends_on(self, dependency):
+        """
+        List of packages that depend on dependency
+        :param dependency: package name, e.g.  'vext' or 'Pillow'
+        """
+        packages = self.package_info()
+        return [package for package in packages if dependency in package.get("requires", "")]
+
+    def find_vext_files(self):
+        """
+        :return:  Absolute paths to any provided vext files
+        """
+        packages = self.depends_on("vext")
+        vext_files = []
+        for location in [package.get("location") for package in packages]:
+            if not location:
+                continue
+            vext_files.extend(glob(join(location, "*.vext")))
+        return vext_files
+
+    def manually_install_vext(self, vext_files):
+        if vext_files:
+            code = dedent("""
+                from vext.install import install_vexts
+                for status in install_vexts(%s, verify=False):
+                    print(status)
+            """ % vext_files)
+            cmd = [sys.executable, '-c', code]
+            output = subprocess.check_output(cmd)
+            print(output)  # console spam
+
+    def enable_vext(self):
+        code = dedent("""
+            from vext.install import create_pth
+            create_pth()
+        """)
+        cmd = [sys.executable, '-c', code]
+        print("Enable Vext...")
+        output = subprocess.check_output(cmd)
+        print(output) # console spam
+
+    def run(self):
+        """
+        Need to find any pre-existing vext contained in dependent packages
+        and install them
+
+        example:
+
+        you create a setup.py with install_requires["vext.gi"]:
+
+        - vext.gi gets installed using bdist_egg
+        - vext itself is now called with bdist_egg and we end up here
+
+        Vext now needs to find and install .vext files in vext.gi
+        [or any other files that depend on vext]
+
+        :return:
+        """
+        print("vext InstallLib")
+
+        # Find packages that depend on vext and check for .vext files...
+
+        vext_files = self.find_vext_files()
+        print("vext files: ", vext_files)
+        self.manually_install_vext(vext_files)
+        self.enable_vext()
+        install_lib.run(self)
+
+
+#
+# - end of InstallLib code
 
 
 class CleanCommand(Command):
@@ -122,12 +268,13 @@ setup(
         'build': BuildWithPTH,
         'easy_install': EasyInstallWithPTH,
         'install': InstallWithPTH,
+        'install_lib': InstallLib,
         'develop': DevelopWithPTH,
         'clean': CleanCommand,
     },
 
     name='vext',
-    version='0.5.6.3',
+    version=version,
     # We need to have a real directory not a zip file:
     zip_safe=False,
 

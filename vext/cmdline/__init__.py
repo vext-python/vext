@@ -4,18 +4,9 @@ import re
 import sys
 
 from os.path import basename, join
-from vext import vext_pth
 from vext.env import in_venv
-from vext.install import install_vexts
+from vext.install import install_vexts, create_pth
 import vext.gatekeeper
-
-DEFAULT_PTH_CONTENT = """\
-# Install the vext importer - dont die if vext has been uninstalled.
-#
-# Lines beginning with 'import' are executed, so import sys to get
-# going.
-import sys; exec("try:\n import vext\n vext.install_importer()\nexcept:\n pass")
-"""
 
 def requires_venv(f):
     def run():
@@ -67,9 +58,7 @@ def do_enable():
     except IOError as e:
         if e.errno == 2:
             # vext file doesn't exist, recreate it.
-            with open(vext_pth, 'w') as f:
-                f.write(DEFAULT_PTH_CONTENT)
-
+            create_pth()
 
 @requires_venv
 def do_disable():
@@ -180,19 +169,20 @@ def main():
     if args.list:
         do_status()
         list_vexts()
-    elif args.disable:
+    if args.disable:
         do_disable()
-    elif args.enable:
+    if args.enable:
         do_enable()
-    elif args.status:
+    if args.status:
         do_status()
-    elif args.check:
+    if args.check:
         if not do_check(args.check):
             err_level = 1
-    elif args.install:
+    if args.install:
         do_install_vexts(args.install)
-    else:
-        do_status()
-        print()
-        parser.print_help()
+
+    #else:
+    #    do_status()
+    #    print()
+    #    parser.print_help()
     sys.exit(err_level)

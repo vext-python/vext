@@ -8,7 +8,16 @@ from sys import prefix
 
 from vext.env import run_in_syspy
 from vext.gatekeeper import open_spec
-from vext import logger
+from vext import logger, vext_pth
+
+
+DEFAULT_PTH_CONTENT = """\
+# Install the vext importer - dont die if vext has been uninstalled.
+#
+# Lines beginning with 'import' are executed, so import sys to get
+# going.
+import sys; exec("try:\\n import vext\\n vext.install_importer()\\nexcept:\\n pass")
+"""
 
 
 def check_sysdeps(vext_files):
@@ -47,13 +56,13 @@ def check_sysdeps(vext_files):
     return success
 
 
-def install_vexts(vext_files):
+def install_vexts(vext_files, verify=True):
     """
     copy vext_file to sys.prefix + '/share/vext/specs'
 
     (PIP7 seems to remove data_files so we recreate something similar here)
     """
-    if not check_sysdeps(vext_files):
+    if verify and not check_sysdeps(vext_files):
         return
 
     spec_dir = join(prefix, 'share/vext/specs')
@@ -70,3 +79,12 @@ def install_vexts(vext_files):
             yield vext_file, dest
         except IOError as e:
             logger.error("Could not copy %s %r" % (vext_file, e))
+
+
+def create_pth():
+    """
+    Create the default PTH file
+    :return:
+    """
+    with open(vext_pth, 'w') as f:
+        f.write(DEFAULT_PTH_CONTENT)
