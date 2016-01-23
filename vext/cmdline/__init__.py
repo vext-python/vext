@@ -4,6 +4,7 @@ import re
 import sys
 
 from os.path import basename, join
+from vext import vext_pth
 from vext.env import in_venv
 from vext.install import install_vexts, create_pth
 import vext.gatekeeper
