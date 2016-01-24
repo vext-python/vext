@@ -173,7 +173,7 @@ class GatekeeperFinder(object):
         try:
             for other_path in other_paths:
                 try:
-                    module_info = imp.find_module(fullname, other_path)
+                    module_info = imp.find_module(fullname, [other_path])
                     if module_info:
                         logger.debug("found module %s in other path [%s]", fullname, other_path)
                         return

@@ -118,6 +118,9 @@ class InstallLib(install_lib):
         """ :return: list of installed packages """
         packages = []
         for package in subprocess.check_output(["pip", "freeze"]).splitlines():
+            # Python 3 fix
+            if not isinstance(package, str):
+                package = str(package, 'UTF-8')
             # installed package names look like Pillow==2.8.1, get the first part
             name = package.partition("==")[0]
             packages.append(name)
@@ -139,6 +142,9 @@ class InstallLib(install_lib):
             cmdline.extend(["show", name])
 
         output = subprocess.check_output(cmdline)
+        # Python 3 fix
+        if not isinstance(output, str):
+            output = str(output, 'UTF-8')
         # parse output that looks like this example
         """
         ---
