@@ -17,7 +17,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version='0.5.13'
+version = "0.5.14"
 
 try:
     reload
@@ -75,7 +75,6 @@ from setuptools.command.easy_install import easy_install
 from setuptools.command.install_lib import install_lib
 
 here = normpath(abspath(dirname(__file__)))
-import os
 
 
 class BuildWithPTH(build):
@@ -117,13 +116,15 @@ class InstallLib(install_lib):
     def installed_packages(self):
         """ :return: list of installed packages """
         packages = []
-        for package in subprocess.check_output(["pip", "freeze"]).splitlines():
-            # Python 3 fix
-            if not isinstance(package, str):
-                package = str(package, 'UTF-8')
-            # installed package names look like Pillow==2.8.1, get the first part
-            name = package.partition("==")[0]
-            packages.append(name)
+        for package in subprocess.check_output(["pip", "freeze"]) \
+                .decode('utf-8'). \
+                splitlines():
+            if "==" in package:
+                # installed package names usually look like Pillow==2.8.1
+                # ignore others, like external packages that pip show
+                # won't understand
+                name = package.partition("==")[0]
+                packages.append(name)
         return packages
 
     def package_info(self):

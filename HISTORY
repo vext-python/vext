@@ -1,3 +1,9 @@
+0.5.14
+------
+
+Python 3 fixes.
+Don't die if external packaged installed.
+
 0.5.6
 -----
 
