@@ -204,12 +204,13 @@ def init_path():
     """
     Add any new modules that are directories to the PATH
     """
-    sitedir = getsyssitepackages()
-    env_path = os.environ['PATH'].split(os.pathsep)
-    for module in allowed_modules:
-        p = join(sitedir, module)
-        if isdir(p) and not p in env_path:
-            os.environ['PATH'] += env_t(os.pathsep + p)
+    sitedirs = getsyssitepackages()
+    for sitedir in sitedirs:
+        env_path = os.environ['PATH'].split(os.pathsep)
+        for module in allowed_modules:
+            p = join(sitedir, module)
+            if isdir(p) and not p in env_path:
+                os.environ['PATH'] += env_t(os.pathsep + p)
 
 
 def open_spec(f):
