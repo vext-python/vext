@@ -1,12 +1,10 @@
 Some things don't easily work in virtualenv, so use them from the system 
 python, without --system-site-packages.
 
-Example
-=======
+Example using pygame
+====================
 
-Make sure pip and setuptools are up to date:
-
-(my-virtualenv) $ pip install -U pip setuptools
+After install pygame to the system python, install vext.pygame in your virtualenv:
 
 (my-virtualenv) $ pip vext vext.pygame
 
