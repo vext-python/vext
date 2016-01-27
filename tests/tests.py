@@ -5,7 +5,7 @@ import vext.env
 
 
 def test_findsyspy():
-    vext.env.findsyspy()
+    print(vext.env.findsyspy())
 
 
 def test_invenv():
