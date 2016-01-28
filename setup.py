@@ -119,12 +119,13 @@ class InstallLib(install_lib):
         for package in subprocess.check_output(["pip", "freeze"]) \
                 .decode('utf-8'). \
                 splitlines():
-            if "==" in package:
-                # installed package names usually look like Pillow==2.8.1
-                # ignore others, like external packages that pip show
-                # won't understand
-                name = package.partition("==")[0]
-                packages.append(name)
+            for comparator in ["==", ">=", "<=", "<", ">"]:
+                if comparator in package:
+                    # installed package names usually look like Pillow==2.8.1
+                    # ignore others, like external packages that pip show
+                    # won't understand
+                    name = package.partition(comparator)[0]
+                    packages.append(name)
         return packages
 
     def package_info(self):
