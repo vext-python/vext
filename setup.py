@@ -17,7 +17,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.5.15"
+version = "0.5.16"
 
 try:
     reload
@@ -325,7 +325,7 @@ setup(
         'vext.install',
     ],
 
-    setup_requires=["setuptools>=18.0.1"],
+    setup_requires=["setuptools>=18.0.1", "pip>=1.5.6"],
     install_requires=["pyyaml==3.11"],
 
     # Install the import hook
