@@ -4,12 +4,12 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" PACKAGES="libpython-dev2.7 python-setuptools"
+      env: PYTHON="python2" PACKAGES="libpython-dev python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" IN_VENV="1" PACKAGES="libpython2.7-dev python-setuptools"
+      env: PYTHON="python2" IN_VENV="1" PACKAGES="libpython-dev python-setuptools"
     - os: linux
       sudo: required
       dist: wily
