@@ -26,13 +26,12 @@ install:
  - if [ "$IN_VENV" != "1" ]; then export RUN_PYTHON="sudo $PYTHON"; fi
  - sudo apt-get update -q
  - sudo apt-get install $(echo $PACKAGES)
- - echo $PYTHON
- - which $PYTHON
- - $PYTHON --version
- - if [ "$PYTHON" == "python2" ]; then curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $PYTHON; fi
- - $PYTHON -mpip show setuptools
- - $PYTHON setup.py install
- - $PYTHON -mpip show setuptools
+ - echo $RUN_PYTHON
+ - which $RUN_PYTHON
+ - $RUN_PYTHON --version
+ - $RUN_PYTHON -mpip show setuptools
+ - $RUN_PYTHON setup.py install
+ - $RUN_PYTHON -mpip show setuptools
 
 script:
  - if [ "$IN_VENV" == "1" ]; then export RUN_PYTHON=_venv/bin/python; fi
