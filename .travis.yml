@@ -24,7 +24,7 @@ matrix:
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; PYTHON=_venv/bin/python; fi
  - sudo apt-get update -q
- - sudo apt-get install --no-install-recommends $(echo $PACKAGES)
+ - sudo apt-get install $(echo $PACKAGES)
  - echo PYTHON: $PYTHON $($PYTHON --version)
  - $PYTHON setup.py install
 
