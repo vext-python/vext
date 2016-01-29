@@ -14,12 +14,12 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" PACKAGES="curl python3-setuptools"
+      env: PYTHON="python3" PACKAGES="curl python3-pip python3-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" IN_VENV="1" PACKAGES="curl python3-setuptools"
+      env: PYTHON="python3" IN_VENV="1" PACKAGES="curl python3-pip python3-setuptools"
 
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export RUN_PYTHON=_venv/bin/python; fi
