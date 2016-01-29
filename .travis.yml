@@ -29,4 +29,4 @@ install:
  - $PYTHON setup.py install
 
 script:
- - $PYTHON ./text.py --in_venv=$(IN_VENV)
+ - $PYTHON ./tests/text.py --in_venv=$(IN_VENV)
