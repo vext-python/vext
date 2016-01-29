@@ -31,5 +31,5 @@ install:
 
 script:
  - if [ "$IN_VENV" == "1" ]; then export PYTHON=_venv/bin/python; fi
- - if [ "$IN_VENV" != "1" ]; then export PYTHON=sudo $PYTHON fi
+ - if [ "$IN_VENV" != "1" ]; then export PYTHON=sudo $PYTHON; fi
  - $PYTHON ./tests/tests.py --in-venv=$IN_VENV
