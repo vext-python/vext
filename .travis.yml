@@ -4,12 +4,12 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" PACKAGES="libpython-dev python-setuptools"
+      env: PYTHON="python2" PACKAGES="libpython-dev2.7 python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" IN_VENV="1" PACKAGES="libpython-dev python-setuptools"
+      env: PYTHON="python2" IN_VENV="1" PACKAGES="libpython2.7-dev python-setuptools"
     - os: linux
       sudo: required
       dist: wily
@@ -24,7 +24,6 @@ matrix:
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; PYTHON=_venv/bin/python; fi
  - sudo apt-get update -q
- - echo sudo apt-get install --no-install-recommends $(echo $PACKAGES)
  - sudo apt-get install --no-install-recommends $(echo $PACKAGES)
  - echo PYTHON: $PYTHON $($PYTHON --version)
  - $PYTHON setup.py install
