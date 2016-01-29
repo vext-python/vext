@@ -4,7 +4,7 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" PACKAGES="python-setuptools"
+      env: PYTHON="sudo python2" PACKAGES="python-setuptools"
     - os: linux
       sudo: required
       dist: wily
@@ -14,7 +14,7 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" PACKAGES="python3-setuptools"
+      env: PYTHON="sudo python3" PACKAGES="python3-setuptools"
     - os: linux
       sudo: required
       dist: wily
