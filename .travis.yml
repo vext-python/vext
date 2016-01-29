@@ -22,20 +22,20 @@ matrix:
       env: PYTHON="python3" IN_VENV="1" PACKAGES="curl python3-setuptools"
 
 install:
- - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export PYTHON=_venv/bin/python; fi
- - if [ "$IN_VENV" != "1" ]; then export PYTHON="sudo $PYTHON"; fi
+ - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export RUN_PYTHON=_venv/bin/python; fi
+ - if [ "$IN_VENV" != "1" ]; then export RUN_PYTHON="sudo $PYTHON"; fi
  - sudo apt-get update -q
  - sudo apt-get install $(echo $PACKAGES)
  - echo $PYTHON
  - which $PYTHON
  - $PYTHON --version
- - curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $PYTHON
+ - if [ "$PYTHON" == "python2" ]; then curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $PYTHON; fi
  - $PYTHON -mpip show setuptools
  - $PYTHON setup.py install
  - $PYTHON -mpip show setuptools
 
 script:
- - if [ "$IN_VENV" == "1" ]; then export PYTHON=_venv/bin/python; fi
- - if [ "$IN_VENV" != "1" ]; then export PYTHON="sudo $PYTHON"; fi
- - $PYTHON -mpip show setuptools
- - $PYTHON ./tests/tests.py --in-venv=$IN_VENV
+ - if [ "$IN_VENV" == "1" ]; then export RUN_PYTHON=_venv/bin/python; fi
+ - if [ "$IN_VENV" != "1" ]; then export RUN_PYTHON="sudo $PYTHON"; fi
+ - $RUN_PYTHON -mpip show setuptools
+ - $RUN_PYTHON ./tests/tests.py --in-venv=$IN_VENV
