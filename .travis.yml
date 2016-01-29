@@ -4,22 +4,22 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" PACKAGES="libpython2.7-dev python-setuptools"
+      env: PYTHON="python2" PACKAGES="python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" IN_VENV="1" PACKAGES="libpython2.7-dev python-setuptools"
+      env: PYTHON="python2" IN_VENV="1" PACKAGES="python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" PACKAGES="libpython3-dev python3-setuptools"
+      env: PYTHON="python3" PACKAGES="python3-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" IN_VENV="1" PACKAGES="libpython3-dev python3-setuptools"
+      env: PYTHON="python3" IN_VENV="1" PACKAGES="python3-setuptools"
 
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; PYTHON=_venv/bin/python; fi
