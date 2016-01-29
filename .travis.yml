@@ -1,3 +1,5 @@
+# python 3.2 in system python is not included, as couldn't get upgrade of pip working.
+
 matrix:
   include:
     - os: linux
@@ -10,11 +12,6 @@ matrix:
       dist: wily
       language: generic
       env: PYTHON="python2" IN_VENV="1" PACKAGES="curl python-setuptools"
-    - os: linux
-      sudo: required
-      dist: wily
-      language: generic
-      env: PYTHON="python3" PACKAGES="curl python3-setuptools"
     - os: linux
       sudo: required
       dist: wily
