@@ -26,6 +26,7 @@ install:
  - if [ "$IN_VENV" != "1" ]; then export PYTHON="sudo $PYTHON"; fi
  - sudo apt-get update -q
  - sudo apt-get install $(echo $PACKAGES)
+ - echo $PYTHON
  - which $PYTHON
  - $PYTHON --version
  - curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $PYTHON
