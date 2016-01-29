@@ -4,22 +4,22 @@ matrix:
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" PACKAGES="python-pip python-setuptools"
+      env: PYTHON="python2" PACKAGES="curl python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python2" IN_VENV="1" PACKAGES="python-pip python-setuptools"
+      env: PYTHON="python2" IN_VENV="1" PACKAGES="curl python-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" PACKAGES="python3-pip python3-setuptools"
+      env: PYTHON="python3" PACKAGES="curl python3-setuptools"
     - os: linux
       sudo: required
       dist: wily
       language: generic
-      env: PYTHON="python3" IN_VENV="1" PACKAGES="python3-pip python3-setuptools"
+      env: PYTHON="python3" IN_VENV="1" PACKAGES="curl python3-setuptools"
 
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export PYTHON=_venv/bin/python; fi
@@ -28,6 +28,7 @@ install:
  - sudo apt-get install $(echo $PACKAGES)
  - which $PYTHON
  - $PYTHON --version
+ - $PYTHON curl https://bootstrap.pypa.io/get-pip.py | $PYTHON
  - $PYTHON -mpip show setuptools
  - $PYTHON setup.py install
  - $PYTHON -mpip show setuptools
