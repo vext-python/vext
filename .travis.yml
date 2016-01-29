@@ -23,6 +23,7 @@ matrix:
 
 install:
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export PYTHON=_venv/bin/python; fi
+ - if [ "$IN_VENV" != "1" ]; then export PYTHON=sudo $PYTHON; fi
  - sudo apt-get update -q
  - sudo apt-get install $(echo $PACKAGES)
  - which python
