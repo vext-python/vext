@@ -28,7 +28,7 @@ install:
  - sudo apt-get install $(echo $PACKAGES)
  - which $PYTHON
  - $PYTHON --version
- - curl https://bootstrap.pypa.io/get-pip.py | $PYTHON
+ - curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | $PYTHON
  - $PYTHON -mpip show setuptools
  - $PYTHON setup.py install
  - $PYTHON -mpip show setuptools
