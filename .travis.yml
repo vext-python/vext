@@ -22,6 +22,7 @@ matrix:
       env: PYTHON="python3" IN_VENV="1" PACKAGES="curl python3-setuptools"
 
 install:
+ - lsb_release -a
  - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export RUN_PYTHON=_venv/bin/python; fi
  - if [ "$IN_VENV" != "1" ]; then export RUN_PYTHON="sudo $PYTHON"; fi
  - sudo apt-get update -q
@@ -34,7 +35,6 @@ install:
  - $RUN_PYTHON -mpip show setuptools
 
 script:
- - lsb_release -a
  - if [ "$IN_VENV" == "1" ]; then export RUN_PYTHON=_venv/bin/python; fi
  - if [ "$IN_VENV" != "1" ]; then export RUN_PYTHON="sudo $PYTHON"; fi
  - $RUN_PYTHON -mpip show setuptools
