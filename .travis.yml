@@ -22,9 +22,10 @@ matrix:
       env: PYTHON="python3" IN_VENV="1" PACKAGES="python3-setuptools"
 
 install:
- - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; PYTHON=_venv/bin/python; fi
+ - if [ "$IN_VENV" == "1" ]; then virtualenv --python=$PYTHON _venv; export PYTHON=_venv/bin/python; fi
  - sudo apt-get update -q
  - sudo apt-get install $(echo $PACKAGES)
+ - which $PYTHON; python --version
  - $PYTHON setup.py install
 
 script:
