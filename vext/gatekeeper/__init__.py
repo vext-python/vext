@@ -23,7 +23,7 @@ import sys
 from genericpath import isdir, isfile
 from os.path import join, basename, abspath, splitext, relpath, normpath
 
-from vext.env import getsyssitepackages, in_venv
+from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
 from vext import registry, logger
 

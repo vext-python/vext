@@ -7,7 +7,7 @@ from genericpath import isfile
 import ast
 import inspect
 import os
-from os.path import basename, join, normpath, realpath
+from os.path import basename, join, normcase, normpath, realpath
 import subprocess
 import sys
 from textwrap import dedent
@@ -112,9 +112,9 @@ def findsyspy():
 
         for folder in os.environ['PATH'].split(os.pathsep):
             if folder and \
-                folder.startswith(prefix) and\
-                isfile(join(folder, python)):
-                return join(folder, python)
+                normcase(folder).startswith(normcase(prefix)) and\
+                    isfile(join(folder, python)):
+                        return join(folder, python)
 
 
 orig_prefix = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
