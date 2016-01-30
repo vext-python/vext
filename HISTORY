@@ -1,3 +1,8 @@
+0.5.17
+------
+
+Fix for gi.repository on Windows - fixup PATH after loading .pth file
+
 0.5.16
 ------
 
