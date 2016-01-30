@@ -112,9 +112,14 @@ def findsyspy():
 
         for folder in os.environ['PATH'].split(os.pathsep):
             if folder and \
-                normcase(folder).startswith(normcase(prefix)) and\
+                normpath(normcase(folder)).startswith(normcase(normpath(prefix))) and\
                     isfile(join(folder, python)):
                         return join(folder, python)
+
+        # Homebrew doesn't leave python in the PATH
+        if isfile(join(prefix, "bin", sys.executable)):
+            return join(prefix, "bin", python)
+
 
 
 orig_prefix = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
