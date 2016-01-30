@@ -2,6 +2,7 @@
 ------
 
 PIP to requirements (it used to find vext files of dependencies)
+OSX / Windows: Normalise case sensitivity for paths
 
 0.5.15
 ------
