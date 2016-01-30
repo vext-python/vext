@@ -117,7 +117,7 @@ def findsyspy():
                         return join(folder, python)
 
         # Homebrew doesn't leave python in the PATH
-        if isfile(join(prefix, "bin", sys.executable)):
+        if isfile(join(prefix, "bin", python)):
             return join(prefix, "bin", python)
 
 
