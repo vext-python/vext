@@ -110,7 +110,8 @@ def fixup_paths():
     if added_dirs != original_dirs:
         for path in set(added_dirs.difference(original_dirs)):
             fixed_path = fix_path(path)
-            added_dirs.replace(path, fixed_path)
+            added_dirs.remove(path)
+            added_dirs.add(fixed_path)
             sys.path.replace(path, fixed_path)
 
 
