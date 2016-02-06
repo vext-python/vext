@@ -110,10 +110,12 @@ def fixup_paths():
     if added_dirs != original_dirs:
         for path in set(added_dirs.difference(original_dirs)):
             fixed_path = fix_path(path)
-            added_dirs.remove(path)
-            added_dirs.add(fixed_path)
-            sys.path.replace(path, fixed_path)
+            if fixed_path != path:
+                added_dirs.remove(path)
+                added_dirs.add(fixed_path)
 
+                i = sys.path.index(path)  # not efficient... but shouldn't happen often
+                sys.path[i] = fixed_path
 
 
 def addpackage(sys_sitedir, pthfile, known_dirs):
