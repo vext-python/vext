@@ -20,8 +20,10 @@ import re
 import site
 import sys
 
+from contextlib import contextmanager
+from distutils.sysconfig import get_python_lib
 from genericpath import isdir, isfile
-from os.path import join, basename, abspath, splitext, relpath, normpath
+from os.path import isdir, join, basename, abspath, splitext, relpath
 
 from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
@@ -53,15 +55,78 @@ else:
     env_t = unicode
 
 
-def addpackage(sitedir, pthfile, known_dirs=None):
+def fix_path(p):
+    """
+    Convert path pointing subdirectory of virtualenv site-packages
+    to system site-packages.
+    
+    Destination directory must exist for this to work.
+
+    >>> fix_path('C:\\some-venv\\Lib\\site-packages\\gnome')
+    'C:\\Python27\\lib\\site-packages\\gnome'
+    """
+    venv_lib = get_python_lib()
+
+    if p.startswith(venv_lib):
+        subdir = p[len(venv_lib)+1:]
+
+        for sitedir in getsyssitepackages():
+            fixed_path = join(sitedir, subdir)
+            if isdir(fixed_path):
+                return fixed_path
+
+    return p
+
+@contextmanager
+def fixup_paths():
+    """
+    Fixup paths added in .pth file that point to the virtualenv
+    instead of the system site packages.
+
+    In depth:  .PTH can execute arbitrary code, which might
+    manipulate the PATH or sys.path
+
+    :return:
+    """
+    original_paths = os.environ.get('PATH', "").split(os.path.pathsep)
+    original_dirs = set(added_dirs)
+    yield
+
+    # Fix PATH environment variable
+    current_paths = os.environ.get('PATH', "").split(os.path.pathsep)
+    if original_paths != current_paths:
+        changed_paths = set(current_paths).difference(set(original_paths))
+        # rebuild PATH env var
+        fixed_paths = []
+        for path in current_paths:
+            if path in changed_paths:
+                fixed_paths.append(fix_path(path))
+            else:
+                fixed_paths.append(path)
+        os.environ['PATH'] = os.pathsep.join(fixed_paths)
+
+
+    # Fix added_dirs
+    if added_dirs != original_dirs:
+        for path in set(added_dirs.difference(original_dirs)):
+            fixed_path = fix_path(path)
+            added_dirs.replace(path, fixed_path)
+            sys.path.replace(path, fixed_path)
+
+
+
+def addpackage(sys_sitedir, pthfile, known_dirs):
     """
     Wrapper for site.addpackage
 
     Try and work out which directories are added by
     the .pth and add them to the known_dirs set
+
+    :param sys_sitedir: system site-packages directory
+    :param pthfile: path file to add
+    :param known_dirs: set of known directories
     """
-    known_dirs = set(known_dirs or [])
-    with open(join(sitedir, pthfile)) as f:
+    with open(join(sys_sitedir, pthfile)) as f:
         for n, line in enumerate(f):
             if line.startswith("#"):
                 continue
@@ -71,7 +136,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                     exec (line, globals(), locals())
                     continue
                 else:
-                    p_rel = join(sitedir, line)
+                    p_rel = join(sys_sitedir, line)
                     p_abs = abspath(line)
                     if isdir(p_rel):
                         os.environ['PATH'] += env_t(os.pathsep + p_rel)
@@ -83,7 +148,7 @@ def addpackage(sitedir, pthfile, known_dirs=None):
                         added_dirs.add(p_abs)
 
     if isfile(pthfile):
-        site.addpackage(sitedir, pthfile, known_dirs)
+        site.addpackage(sys_sitedir, pthfile, known_dirs)
     else:
         logging.debug("pth file '%s' not found")
 
@@ -306,16 +371,17 @@ def load_specs():
 
             sys_sitedirs = getsyssitepackages()
             for sys_sitedir in sys_sitedirs:
-                for pth in [pth for pth in spec['pths'] or [] if pth]:
-                    try:
-                        logger.debug("open pth: %s", pth)
-                        pth_file = join(sys_sitedir, pth)
-                        addpackage(sys_sitedir, pth_file, added_dirs)
-                        init_path()  # TODO
-                    except IOError as e:
-                        # Path files are optional..
-                        logging.debug('No pth found at %s', pth_file)
-                        pass
+                with fixup_paths():
+                    for pth in [pth for pth in spec['pths'] or [] if pth]:
+                        try:
+                            logger.debug("open pth: %s", pth)
+                            pth_file = join(sys_sitedir, pth)
+                            addpackage(sys_sitedir, pth_file, added_dirs)
+                            init_path()  # TODO
+                        except IOError as e:
+                            # Path files are optional..
+                            logging.debug('No pth found at %s', pth_file)
+                            pass
 
         except Exception as e:
             bad_specs.add(fn)
