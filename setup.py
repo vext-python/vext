@@ -288,7 +288,7 @@ setup(
 
     description='Use system python packages from a virtualenv',
     long_description=dedent("""
-        Use specific system python packages from virtualenv with --system-site-packages.
+        Use specific system python packages from virtualenv without --system-site-packages.
 
         Supports:
         pygtk, gi (gtk3), qt4, qt5, panda3d, vtk, wx
