@@ -4,9 +4,9 @@ python, without --system-site-packages.
 Example using pygame
 ====================
 
-After install pygame to the system python, install vext.pygame in your virtualenv:
+After installing pygame to the system python, install vext.pygame in your virtualenv:
 
-(my-virtualenv) $ pip vext vext.pygame
+(my-virtualenv) $ pip vext.pygame
 
 
 Available packages
@@ -32,11 +32,9 @@ These can be installed using pip as long as corresponding package is installed i
 Blerb
 =====
 
-Virtualenv is great and is really well supported in the web development
-community.  
+Virtualenv is really well supported in the web development community.  
 
-Packages for graphics, audio and guis often use the python C API and
-so can't be installed a virtualenv using pip.
+Graphics and audio and GUI packages often don't work with virtualenv.
 
 Vext lets you use access specific modules in the system python, using
 just pip and standard requirements.
@@ -67,16 +65,23 @@ Works
 Adding packages
 ===============
 
-Vext is a workaround, if you can - it's might better to fix make
-packages to work in virtualenv. 
+Fixing packages is better
+-------------------------
 
-In the case of bindings then switching from the python C API to
-CFFI is often a great solution (as a bonus, your package will
-work with pypy too).
+Vext is a workaround, it's always better to fix packages to
+work with virtualenv if you can. 
 
-Still reading ?
 
-Create a .vext file, the pygtk example looks like this:
+Packages that use C extensions often don't work, because their
+setup.py doesn't know about virtualenv.
+
+Pillow and Numpy are notable packages that have made this work.
+
+
+Using Vext Instead
+------------------
+
+To enable a vext package, create a .vext file as below:
 
 ```
 # Pygtk vext
@@ -108,6 +113,10 @@ Then create a setup.py to install it (have a look at vext.pygtk)
 
 Vext is cross platform, so please try and test your vext specs
 on windows as well as osx and linux !
+
+
+Next, open a ticket on the Vext github.
+
 
 Vext Spec File Format
 =====================
