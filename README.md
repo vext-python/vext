@@ -1,6 +1,8 @@
 Some things don't easily work in virtualenv, so use them from the system 
 python, without --system-site-packages.
 
+[![Build Status](https://travis-ci.org/stuaxo/vext.svg?branch=master)](https://travis-ci.org/stuaxo/vext)
+
 Example using pygame
 ====================
 
