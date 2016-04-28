@@ -12,7 +12,7 @@ python:
 # command to install dependencies
 install:
   # older versions of pip won't work
-  - sudo pip install -U setuptools pip
+  - pip install -U setuptools pip
   - "VEXT_RELOAD_HACK=1 python setup.py install"
 
 # command to run tests
