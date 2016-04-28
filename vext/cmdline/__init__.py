@@ -151,6 +151,10 @@ def do_install_vexts(vext_files):
         print("  %s" % src)
 
 
+# def do_diagnose(vext_files):
+#     # Try and find out minimal paths needed for
+#     for
+
 def main():
     import argparse
 
@@ -160,6 +164,7 @@ def main():
     parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
     parser.add_argument('-c', '--check', dest='check', nargs='*', help='[external package] Test imports for external package')
+    # parser.add_argument('-g', '--diagnose', dest='check', nargs='*', help='[vext file]')
     # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')  # TODO
 
     parser.add_argument('-i', '--install', dest='install', nargs='*', help='Install vext file (used during setup)')
@@ -179,6 +184,8 @@ def main():
     if args.check:
         if not do_check(args.check):
             err_level = 1
+    #if args.diagnose:
+    #    do_diagnose()
     if args.install:
         do_install_vexts(args.install)
 
