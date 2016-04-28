@@ -12,7 +12,9 @@ python:
 install:
   # older versions of pip won't work
   - pip install -U setuptools pip
+  - pip --version
   - "VEXT_RELOAD_HACK=1 python setup.py install"
+  - vext -s
 
 # command to run tests
 script: nosetests
