@@ -13,6 +13,7 @@ install:
   # older versions of pip won't work
   - sudo apt-get install libyaml-dev
   - pip install -U setuptools pip
+  - pip -r requirements.txt
   - pip --version
   - "VEXT_RELOAD_HACK=1 python setup.py install"
   - vext -s
