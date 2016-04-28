@@ -12,6 +12,7 @@ python:
 install:
   # older versions of pip won't work
   - sudo apt-get install libyaml-dev
+  - pip install nose
   - pip install -U setuptools pip
   - pip install -r requirements.txt
   - pip --version
