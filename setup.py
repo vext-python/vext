@@ -338,7 +338,7 @@ setup(
     ],
 
     setup_requires=["setuptools>=18.0.1", "pip>=1.5.6"],
-    install_requires=["pyyaml==3.11"],
+    install_requires=["pyyaml"], # 3.11
 
     # Install the import hook
     # data_files=[
