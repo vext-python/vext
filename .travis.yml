@@ -8,7 +8,12 @@ python:
   - "3.5"
   - "3.5-dev" # 3.5 development branch
   - "nightly" # currently points to 3.6-dev
+
 # command to install dependencies
-install: "VEXT_RELOAD_HACK=1 python setup.py install"
+install:
+  # older versions of pip won't work
+  - sudo pip install -U setuptools pip
+  - "VEXT_RELOAD_HACK=1 python setup.py install"
+
 # command to run tests
 script: nosetests
