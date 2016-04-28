@@ -12,6 +12,7 @@ from pkg_resources import DistributionNotFound
 if "VEXT_DEBUG_LOG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
 
+ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
 logger = logging.getLogger("vext")
 
 
@@ -49,9 +50,19 @@ def upgrade_setuptools():
         subprocess.call("pip install 'setuptools>=%s'" % MIN_SETUPTOOLS, shell=True)
 
 
+def do_reload(module):
+    if ignore_reload_errors:
+        try:
+            reload(pkg_resources)
+        except Exception as e:
+            # Horrible hack to workaround travis problem
+            print("VEXT_RELOAD_HACK set, ignoring %s" % e)
+    else:
+        reload(pkg_resources)
+
 if "install" in sys.argv:
     upgrade_setuptools()
-    reload(pkg_resources)
+    do_reload(pkg_resources)
     try:
         r = pkg_resources.require(["setuptools"])[0]
         print("setuptools version: %s" % r.version)
