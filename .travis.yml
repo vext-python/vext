@@ -20,4 +20,7 @@ install:
   - vext -s
 
 # command to run tests
-script: nosetests
+script:
+  - which nosetests 
+  - export VEXT_DEBUG_LOG=1
+  - nosetests
