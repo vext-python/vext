@@ -18,7 +18,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.5.21"
+version = "0.5.22"
 
 try:
     reload
@@ -338,7 +338,7 @@ setup(
     ],
 
     setup_requires=["setuptools>=18.0.1", "pip>=1.5.6"],
-    install_requires=["pyyaml"], # 3.11
+    install_requires=["ruamel.yaml>=0.11.10"],
 
     # Install the import hook
     # data_files=[

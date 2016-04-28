@@ -294,7 +294,7 @@ def open_spec(f):
     modules - list of base modules that can be loaded
     pths    - list of .pth files to load
     """
-    import yaml
+    import ruamel.yaml as yaml
 
     keys = ['modules', 'pths', 'test_import', 'install_hints', 'extra_paths']
     data = yaml.load(f)
