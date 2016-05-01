@@ -18,7 +18,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.5.22"
+version = "0.5.23"
 
 try:
     reload
