@@ -16,6 +16,8 @@ Available packages
 
 These can be installed using pip as long as corresponding package is installed in the system python
 
+  vext.opencv
+
   vext.panda3d
   
   vext.pygame
