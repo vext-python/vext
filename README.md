@@ -1,4 +1,4 @@
-Some things don't easily work in virtualenv, so use them from the system 
+Some things don't easily work in virtualenv and venv, so use them from the system 
 python, without --system-site-packages.
 
 [![Build Status](https://travis-ci.org/stuaxo/vext.svg?branch=master)](https://travis-ci.org/stuaxo/vext)
@@ -16,8 +16,6 @@ Available packages
 
 These can be installed using pip as long as corresponding package is installed in the system python
 
-  vext.opencv
-
   vext.panda3d
   
   vext.pygame
@@ -33,12 +31,28 @@ These can be installed using pip as long as corresponding package is installed i
   vext.vtk
 
 
+Deprecated Packates
+===================
+
+Vext packages get deprecated when the originating project supports installation
+from pip and virtualenv / venv...  
+
+let's try and deprecate them all so vext is no longer needed.
+
+  vext.opencv
+  
+  OpenCV now supports installation through pip and virtualenv, so vext.opencv is not needed,
+  good work OpenCV Team !
+  
+  
+See the section "Fixing packages is better" below.
+
 Blerb
 =====
 
-Virtualenv is really well supported in the web development community.  
+Virtualenv / venv are really well supported in the web development community.  
 
-Graphics and audio and GUI packages often don't work with virtualenv.
+Graphics and audio and GUI packages often don't work with virtualenv / venv.
 
 Vext lets you use access specific modules in the system python, using
 just pip and standard requirements.
@@ -48,7 +62,7 @@ Why not use --system-site-packages?
 -----------------------------------
 
 Pulling in everything gets things working quickly, but negates
-many of the advantages of virtualenv.
+many of the advantages of virtualenv / venv.
 
 For instance it can be easy to forget to add packages to 
 requirements.txt when everything "works for me(TM)".
@@ -72,14 +86,15 @@ Adding packages
 Fixing packages is better
 -------------------------
 
-Vext is a workaround, it's always better to fix packages to
-work with virtualenv if you can. 
+Vext is a workaround, it is always better to fix packages to
+work with virtualenv / venv if you can. 
 
 
 Packages that use C extensions often don't work, because their
-setup.py doesn't know about virtualenv.
+setup.py doesn't know about virtualenv / venv.
 
-Pillow and Numpy are notable packages that have made this work.
+Pillow, Numpy and more recently OpenCV are notable packages
+that can be installed in virtualenv / venv with pip.
 
 
 Using Vext Instead

@@ -35,6 +35,7 @@ def run_in_syspy(f):
 
     env = os.environ
     python = findsyspy()
+    logger.debug("Create function for system python\n%s" % code)
 
     def call_f(*args):
         cmd = [python, '-c', code] + list(args)
@@ -55,8 +56,9 @@ def in_venv():
     if _in_venv is not None:
         return _in_venv
 
-    if not os.path.isfile(orig_prefix):
-        logger.debug("in_venv no orig_prefix [%s]", orig_prefix)
+    if not (os.path.isfile(ORIG_PREFIX_TXT) or os.path.isfile(PY_VENV_CFG)):
+        logger.debug("in_venv no orig_prefix_txt [%s]", ORIG_PREFIX_TXT)
+        logger.debug("in_venv no py_venv_cfg [%s]", PY_VENV_CFG)
         # TODO - check this is actually valid !
         _in_venv = False
         return _in_venv
@@ -107,21 +109,33 @@ def findsyspy():
         return sys.executable
 
     python = basename(realpath(sys.executable))
-    with open(orig_prefix) as op:
-        prefix = op.read()
+    prefix = None
+    if HAS_ORIG_PREFIX_TXT:
+        with open(ORIG_PREFIX_TXT) as op:
+            prefix = op.read()
+    elif HAS_PY_VENV_CFG:
+        prefix = getattr(sys, "_home")
 
-        for folder in os.environ['PATH'].split(os.pathsep):
-            if folder and \
-                normpath(normcase(folder)).startswith(normcase(normpath(prefix))) and\
-                    isfile(join(folder, python)):
-                        return join(folder, python)
+    if not prefix:
+        return None
 
-        # Homebrew doesn't leave python in the PATH
-        if isfile(join(prefix, "bin", python)):
-            return join(prefix, "bin", python)
+    for folder in os.environ['PATH'].split(os.pathsep):
+        if folder and \
+            normpath(normcase(folder)).startswith(normcase(normpath(prefix))) and\
+                isfile(join(folder, python)):
+                    return join(folder, python)
+
+    # OSX: Homebrew doesn't leave python in the PATH
+    if isfile(join(prefix, "bin", python)):
+        return join(prefix, "bin", python)
 
 
 
-orig_prefix = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
+ORIG_PREFIX_TXT = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
+PY_VENV_CFG = normpath(join( get_python_lib(), '..', '..', '..', 'pyvenv.cfg'))
+
+HAS_ORIG_PREFIX_TXT = os.path.isfile(ORIG_PREFIX_TXT)
+HAS_PY_VENV_CFG = os.path.isfile(PY_VENV_CFG)
+
 _syssitepackages = None
 _in_venv = None
