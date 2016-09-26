@@ -18,7 +18,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.0"
+version = "0.6.1"
 
 try:
     reload
@@ -222,8 +222,12 @@ class InstallLib(install_lib):
         """)
         cmd = [sys.executable, '-c', code]
         print("Enable Vext...")
-        output = subprocess.check_output(cmd)
-        print(output) # console spam
+        try:
+            subprocess.check_output(cmd)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(e.output) # console spam
+            return False
 
     def run(self):
         """
