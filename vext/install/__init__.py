@@ -68,8 +68,8 @@ def install_vexts(vext_files, verify=True):
     spec_dir = join(prefix, 'share/vext/specs')
     try:
         makedirs(spec_dir)
-    except OSError:
-        pass
+    except OSError as e:
+        logger.error("Error making spec directory [%s]: %r" % (spec_dir, e))
 
     for vext_file in vext_files:
         dest = normpath(join(spec_dir, basename(vext_file)))
