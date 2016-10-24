@@ -1,6 +1,6 @@
 import logging
 
-from os.path import basename, join, normpath
+from os.path import basename, isdir, join, normpath
 from os import makedirs
 
 from shutil import copyfile
@@ -69,7 +69,8 @@ def install_vexts(vext_files, verify=True):
     try:
         makedirs(spec_dir)
     except OSError as e:
-        logger.error("Error making spec directory [%s]: %r" % (spec_dir, e))
+        if not isdir(spec_dir):
+            logger.error("Error making spec directory [%s]: %r" % (spec_dir, e))
 
     for vext_file in vext_files:
         dest = normpath(join(spec_dir, basename(vext_file)))
