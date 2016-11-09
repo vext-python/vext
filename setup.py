@@ -47,7 +47,7 @@ def upgrade_setuptools():
         return
     else:
         print("Upgrading setuptools...")
-        subprocess.call("pip install 'setuptools>=%s'" % MIN_SETUPTOOLS, shell=True)
+        subprocess.call("%s -mpip install 'setuptools>=%s'" % (sys.executable, MIN_SETUPTOOLS), shell=True)
 
 
 def do_reload(module):
