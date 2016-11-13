@@ -20,7 +20,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.6"
+version = "0.6.7"
 
 try:
     reload
@@ -164,7 +164,7 @@ class InstallLib(install_lib):
             # No installed packages yet, so nothign to do here...
             return []
 
-        cmdline = ["pip"]
+        cmdline = [sys.executable, "-mpip"]
         for name in package_names:
             cmdline.extend(["show", name])
 
