@@ -5,11 +5,13 @@ import os
 import pkg_resources
 import subprocess
 import sys
+import traceback
 
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
 
-if "VEXT_DEBUG_LOG" in os.environ:
+DEBUG_LOG = "VEXT_DEBUG_LOG" in os.environ
+if DEBUG_LOG:
     logging.basicConfig(level=logging.DEBUG)
 
 ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
@@ -18,13 +20,14 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.4"
+version = "0.6.5"
 
 try:
     reload
 except NameError:
     # python 3
     from imp import reload
+
 
 def upgrade_setuptools():
     """ 
@@ -95,12 +98,14 @@ class BuildWithPTH(build):
         dest = join(self.build_lib, basename(path))
         self.copy_file(path, dest)
 
+
 class InstallWithPTH(install):
     def run(self):
         install.run(self)
         path = join(here, 'vext_importer.pth')
         dest = join(self.install_lib, basename(path))
         self.copy_file(path, dest)
+
 
 class EasyInstallWithPTH(easy_install):
     def run(self):
@@ -127,16 +132,25 @@ class InstallLib(install_lib):
     def installed_packages(self):
         """ :return: list of installed packages """
         packages = []
-        for package in subprocess.check_output([sys.executable, "-mpip", "freeze"]) \
-                .decode('utf-8'). \
-                splitlines():
-            for comparator in ["==", ">=", "<=", "<", ">"]:
-                if comparator in package:
-                    # installed package names usually look like Pillow==2.8.1
-                    # ignore others, like external packages that pip show
-                    # won't understand
-                    name = package.partition(comparator)[0]
-                    packages.append(name)
+        CMDLINE = [sys.executable, "-mpip", "freeze"]
+        try:
+            for package in subprocess.check_output(CMDLINE) \
+                    .decode('utf-8'). \
+                    splitlines():
+                for comparator in ["==", ">=", "<=", "<", ">"]:
+                    if comparator in package:
+                        # installed package names usually look like Pillow==2.8.1
+                        # ignore others, like external packages that pip show
+                        # won't understand
+                        name = package.partition(comparator)[0]
+                        packages.append(name)
+        except RuntimeError as e:
+            if DEBUG_LOG:
+                logger.debug("Exception checking existing packages.")
+                logger.debug("cmdline: %s", CMDLINE)
+                ex_type, ex, tb = sys.exc_info()
+                traceback.print_tb(tb)
+                logger.debug()
         return packages
 
     def package_info(self):
