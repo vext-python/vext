@@ -20,7 +20,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.5"
+version = "0.6.6"
 
 try:
     reload
@@ -260,15 +260,19 @@ class InstallLib(install_lib):
 
         :return:
         """
-        print("vext InstallLib")
+        logger.debug("vext InstallLib [started]")
 
         # Find packages that depend on vext and check for .vext files...
 
+        logger.debug("find_vext_files")
         vext_files = self.find_vext_files()
-        print("vext files: ", vext_files)
+        logger.debug("manually_install_vext: ", vext_files)
         self.manually_install_vext(vext_files)
+        logger.debug("enable vext")
         self.enable_vext()
+        logger.debug("install_lib.run")
         install_lib.run(self)
+        logger.debug("vext InstallLib [finished]")
 
 
 #
