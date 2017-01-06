@@ -22,8 +22,7 @@ import sys
 
 from contextlib import contextmanager
 from distutils.sysconfig import get_python_lib
-from genericpath import isdir, isfile
-from os.path import isdir, join, basename, abspath, splitext, relpath
+from os.path import isdir, isfile, join, basename, abspath, splitext, relpath
 
 from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
