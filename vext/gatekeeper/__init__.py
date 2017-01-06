@@ -59,7 +59,7 @@ def fix_path(p):
     """
     Convert path pointing subdirectory of virtualenv site-packages
     to system site-packages.
-    
+
     Destination directory must exist for this to work.
 
     >>> fix_path('C:\\some-venv\\Lib\\site-packages\\gnome')
@@ -297,7 +297,7 @@ def open_spec(f):
     import ruamel.yaml as yaml
 
     keys = ['modules', 'pths', 'test_import', 'install_hints', 'extra_paths']
-    data = yaml.load(f)
+    data = yaml.safe_load(f)
     parsed = dict()
     ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
     for k in keys:
