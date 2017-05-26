@@ -20,7 +20,7 @@ logger = logging.getLogger("vext")
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.8"
+version = "0.6.9"
 
 try:
     reload
@@ -171,7 +171,10 @@ class InstallLib(install_lib):
         output = subprocess.check_output(cmdline)
         # Python 3 fix
         if not isinstance(output, str):
-            output = str(output, 'UTF-8')
+            # Some package info is encoded in Latin-1 or something other than
+            # UTF8.  Replace non-UTF characters with '?' instead of crashing.
+            output = str(output, encoding='UTF-8', errors='replace')
+
         # parse output that looks like this example
         """
         ---
@@ -283,10 +286,16 @@ class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
     CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info ./__pycache__'.split(' ')
 
-    user_options = []
+    # Support the "all" option. Setuptools expects it in some situations.
+    user_options = [
+        ('all', 'a',
+         "provided for compatibility, has no extra functionality")
+    ]
+
+    boolean_options = ['all']
 
     def initialize_options(self):
-        pass
+        self.all = None
 
     def finalize_options(self):
         pass
