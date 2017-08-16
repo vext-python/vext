@@ -76,9 +76,10 @@ This is quite a clean solution, but doesn't work in Windows.
 Vext
 ----
 
-Acts as a gatekeeper allowing access to particular libraries.
-Works 
+Vext becomes a gatekeeper to system modules, allowing access
+to particular libraries.
 
+Vext works on the same OSs as virtualenv and venv.
 
 Adding packages
 ===============
@@ -93,14 +94,15 @@ work with virtualenv / venv if you can.
 Packages that use C extensions often don't work, because their
 setup.py doesn't know about virtualenv / venv.
 
-Pillow, Numpy and more recently OpenCV are notable packages
-that can be installed in virtualenv / venv with pip.
+Pillow, Numpy and recent versions of OpenCV are notable 
+packages that can be installed in virtualenv / venv with pip.
 
 
 Using Vext Instead
 ------------------
 
-To enable a vext package, create a .vext file as below:
+To enable a vext package, create a .vext file.  
+As an example, here pygtk.vext
 
 ```
 # Pygtk vext
@@ -128,7 +130,8 @@ pths:
     pygtk.pth
 ```
 
-Then create a setup.py to install it (have a look at vext.pygtk)
+A setup.py is needed to install the vext, see the repository for
+vext.pygtk.
 
 Vext is cross platform, so please try and test your vext specs
 on windows as well as osx and linux !
@@ -139,8 +142,6 @@ Next, open a ticket on the Vext github.
 
 Vext Spec File Format
 =====================
-
-Vext is yaml that shows which modules to open
 
 modules
 -------
@@ -219,6 +220,11 @@ Environment Variables
 
 ```VEXT_DISABLED=1``` disable vext when set.
 
+Blocked Imports
+===============
+Vext acts as gatekeeper to system modules, to aid the process of
+creating a vext file it can log blocked imports or just save
+them to a local data structure.
 
 Logging Blocked Imports
 -----------------------
