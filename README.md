@@ -104,7 +104,7 @@ Using Vext Instead
 To enable a vext package, create a .vext file.  
 As an example, here pygtk.vext
 
-```
+```yml
 # Pygtk vext
 #
 
