@@ -9,18 +9,14 @@ import traceback
 
 from distutils.version import StrictVersion
 from pkg_resources import DistributionNotFound
-
-DEBUG_LOG = "VEXT_DEBUG_LOG" in os.environ
-if DEBUG_LOG:
-    logging.basicConfig(level=logging.DEBUG)
+from vext import logger
 
 ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
-logger = logging.getLogger("vext")
 
 
 MIN_SETUPTOOLS = "18.8"
-os.environ['VEXT_DISABLED'] = '1'   # Hopefully this will prevent the nasty memleak that can happen.
-version = "0.6.9"
+os.environ['VEXT_DISABLED'] = '1'   # Don't vext in subprocesses to load, avoiding a memory leak
+version = "0.7.0"
 
 try:
     reload
@@ -30,7 +26,7 @@ except NameError:
 
 
 def upgrade_setuptools():
-    """ 
+    """
     setuptools 12.2 can trigger a really nasty bug
     that eats all memory, so upgrade it to
     18.8, which is known to be good.
@@ -80,7 +76,6 @@ from shutil import rmtree
 from textwrap import dedent
 
 from distutils.command.build import build
-
 from setuptools import setup
 from setuptools import Command
 from setuptools.command.develop import develop
@@ -145,7 +140,7 @@ class InstallLib(install_lib):
                         name = package.partition(comparator)[0]
                         packages.append(name)
         except RuntimeError as e:
-            if DEBUG_LOG:
+            if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("Exception checking existing packages.")
                 logger.debug("cmdline: %s", CMDLINE)
                 ex_type, ex, tb = sys.exc_info()

@@ -12,7 +12,8 @@ from vext import logger, vext_pth
 
 
 DEFAULT_PTH_CONTENT = """\
-# Install the vext importer - dont die if vext has been uninstalled.
+# Attempt to install the vext importer without blowing up everything 
+# if vext was uninstalled in the meantime.
 #
 # Lines beginning with 'import' are executed, so import sys to get
 # going.

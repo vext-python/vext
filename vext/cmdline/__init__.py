@@ -1,13 +1,14 @@
 from __future__ import print_function
+
 import os
 import re
 import sys
-
+import vext.gatekeeper
 from os.path import basename, join
 from vext import vext_pth
 from vext.env import in_venv
 from vext.install import install_vexts, create_pth
-import vext.gatekeeper
+
 
 def requires_venv(f):
     def run():
@@ -60,6 +61,7 @@ def do_enable():
         if e.errno == 2:
             # vext file doesn't exist, recreate it.
             create_pth()
+
 
 @requires_venv
 def do_disable():
@@ -163,7 +165,8 @@ def main():
     parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Disable Vext loader')
     parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
-    parser.add_argument('-c', '--check', dest='check', nargs='*', help='[external package] Test imports for external package')
+    parser.add_argument('-c', '--check', dest='check', nargs='*',
+                        help='[external package] Test imports for external package')
     # parser.add_argument('-g', '--diagnose', dest='check', nargs='*', help='[vext file]')
     # parser.add_argument('-u', '--unblock', dest='unblock', action='store', help='attempt to unblock module')  # TODO
 
@@ -184,12 +187,12 @@ def main():
     if args.check:
         if not do_check(args.check):
             err_level = 1
-    #if args.diagnose:
+    # if args.diagnose:
     #    do_diagnose()
     if args.install:
         do_install_vexts(args.install)
 
-    #else:
+    # else:
     #    do_status()
     #    print()
     #    parser.print_help()

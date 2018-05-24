@@ -1,3 +1,10 @@
+0.7.0
+-----
+Fix for wx.
+Stop logspam on install.
+A spree of file format fixing.
+
+
 0.6.0
 -----
 

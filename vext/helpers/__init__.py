@@ -8,6 +8,7 @@ path_helpers = {
 
 path_cache = {}  # {helper: {paths} }
 
+
 def get_extra_path(name):
     """
     :param name: name in format helper.path_name

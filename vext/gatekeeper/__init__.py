@@ -19,14 +19,12 @@ import os
 import re
 import site
 import sys
-
 from contextlib import contextmanager
 from distutils.sysconfig import get_python_lib
 from os.path import isdir, isfile, join, basename, abspath, splitext, relpath
-
+from vext import registry, logger
 from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
-from vext import registry, logger
 
 log_blocks = 'VEXT_LOG_BLOCKS' in os.environ
 remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
@@ -67,7 +65,7 @@ def fix_path(p):
     venv_lib = get_python_lib()
 
     if p.startswith(venv_lib):
-        subdir = p[len(venv_lib)+1:]
+        subdir = p[len(venv_lib) + 1:]
 
         for sitedir in getsyssitepackages():
             fixed_path = join(sitedir, subdir)
@@ -75,6 +73,7 @@ def fix_path(p):
                 return fixed_path
 
     return p
+
 
 @contextmanager
 def fixup_paths():
@@ -333,6 +332,7 @@ def spec_dir():
     :return: Directory vext files are installed to
     """
     return join(sys.prefix, "share/vext/specs")
+
 
 def spec_files():
     """

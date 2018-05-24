@@ -1,17 +1,17 @@
 """
 Utility functions for handling the python environment (virtual or otherwise)
 """
-from distutils.sysconfig import get_python_lib
-from genericpath import isfile
-
 import ast
 import inspect
 import os
-from os.path import basename, join, normcase, normpath, realpath
 import subprocess
 import sys
+from distutils.sysconfig import get_python_lib
+from genericpath import isfile
+from os.path import basename, join, normcase, normpath, realpath
 from textwrap import dedent
 from vext import logger
+
 
 def run_in_syspy(f):
     """
@@ -42,6 +42,7 @@ def run_in_syspy(f):
         output = subprocess.check_output(cmd, env=env).decode('utf-8')
         result = ast.literal_eval(output)
         return result
+
     return call_f
 
 
@@ -121,18 +122,17 @@ def findsyspy():
 
     for folder in os.environ['PATH'].split(os.pathsep):
         if folder and \
-            normpath(normcase(folder)).startswith(normcase(normpath(prefix))) and\
+                normpath(normcase(folder)).startswith(normcase(normpath(prefix))) and \
                 isfile(join(folder, python)):
-                    return join(folder, python)
+            return join(folder, python)
 
     # OSX: Homebrew doesn't leave python in the PATH
     if isfile(join(prefix, "bin", python)):
         return join(prefix, "bin", python)
 
 
-
-ORIG_PREFIX_TXT = normpath(join( get_python_lib(), '..', 'orig-prefix.txt'))
-PY_VENV_CFG = normpath(join( get_python_lib(), '..', '..', '..', 'pyvenv.cfg'))
+ORIG_PREFIX_TXT = normpath(join(get_python_lib(), '..', 'orig-prefix.txt'))
+PY_VENV_CFG = normpath(join(get_python_lib(), '..', '..', '..', 'pyvenv.cfg'))
 
 HAS_ORIG_PREFIX_TXT = os.path.isfile(ORIG_PREFIX_TXT)
 HAS_PY_VENV_CFG = os.path.isfile(PY_VENV_CFG)
