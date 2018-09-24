@@ -233,8 +233,10 @@ class GatekeeperFinder(object):
 
     def find_module(self, fullname, path=None):
         # TODO Need lots of unit tests around this
-        if fullname in sys.modules:
-            return sys.modules[fullname]
+        module = sys.modules.get(fullname)
+        if module and hasattr(module, "load_module"):
+            # After reload module can be missing load_module
+            return module
 
         sitedirs = getsyssitepackages()
         # Check paths other than system sitepackages first
