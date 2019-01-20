@@ -16,7 +16,7 @@ ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Don't vext in subprocesses to load, avoiding a memory leak
-version = "0.7.0"
+version = "0.7.1"
 
 try:
     reload
