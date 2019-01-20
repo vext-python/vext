@@ -3,9 +3,9 @@ from __future__ import print_function
 import os
 import re
 import sys
-import vext.gatekeeper
 from os.path import basename, join
 from vext import vext_pth
+from vext.conf import open_spec
 from vext.env import in_venv
 from vext.install import install_vexts, create_pth
 
@@ -136,7 +136,7 @@ def do_check(vext_files):
 
     check_passed = True
     for fn in [join(vext.gatekeeper.spec_dir(), fn) for fn in vext_files]:
-        f = vext.gatekeeper.open_spec(open(fn))
+        f = open_spec(open(fn))
         modules = f.get('test_import', [])
         for success, module in vext.gatekeeper.test_imports(modules):
             if not success:

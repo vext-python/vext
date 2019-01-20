@@ -7,7 +7,7 @@ from shutil import copyfile
 from sys import prefix
 
 from vext.env import run_in_syspy
-from vext.gatekeeper import open_spec
+from vext.conf import open_spec
 from vext import logger, vext_pth
 
 

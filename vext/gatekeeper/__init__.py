@@ -6,10 +6,10 @@ Things change quite a lot in python3.5 where imp is deprecated.
 
 Useful environment variables (Used for debug, may change)
 
-VEXT_DISABLED=1         Disable vext by not adding it to sys.path
-VEXT_LOG_BLOCKS=1       Store any blocked imports in registry.blocked_imports
-VEXT_ALLOWED_MODULES=1  Extra modules to allow
-VEXT_DEBUG_LOG=1        Debug logging
+VEXT_DISABLED=1                         Disable vext by not adding it to sys.path
+VEXT_LOG_BLOCKS=1                       Store any blocked imports in registry.blocked_imports
+VEXT_ALLOWED_MODULES=module1,module2    Extra modules to allow
+VEXT_DEBUG_LOG=1                        Debug logging
 
 """
 import glob
@@ -26,6 +26,8 @@ from vext import registry, logger
 from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
 
+from vext.conf import open_spec
+
 log_blocks = 'VEXT_LOG_BLOCKS' in os.environ
 remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
 blocked_imports = registry.blocked_imports  # if remember_blocks is True blocked imports are added here
@@ -37,13 +39,7 @@ if hasattr(sys, 'argv') and 'setup.py' in sys.argv[0:2]:  # Somehow sys doesn't 
     disable_vext = True  # Hack: - need a better way to disable during setup of vext itself
 
 if 'VEXT_ALLOWED_MODULES' in os.environ:
-    allowed_modules.update(re.search(r',| ', os.environ['VEXT_ALLOWED_MODULES']).groups())
-
-try:
-    unicode
-except NameError:
-    # Python 3
-    basestring = unicode = str
+    allowed_modules.update(re.findall(r'[^,\s]+', os.environ['VEXT_ALLOWED_MODULES']))
 
 if os.name == 'nt':
     # Windows needs environment variables + paths to be strings
@@ -284,34 +280,6 @@ def init_path():
                 os.environ['PATH'] += env_t(os.pathsep + p)
 
 
-def open_spec(f):
-    """
-    :param f: file object with spec data
-
-    spec file is a yaml document that specifies which modules
-    can be loaded.
-
-    modules - list of base modules that can be loaded
-    pths    - list of .pth files to load
-    """
-    import ruamel.yaml as yaml
-
-    keys = ['modules', 'pths', 'test_import', 'install_hints', 'extra_paths']
-    data = yaml.safe_load(f)
-    parsed = dict()
-    ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
-    for k in keys:
-        v = data.get(k, [])
-        # Items are always lists
-        if isinstance(v, basestring):
-            parsed[k] = [m for m in re.split(r",| ", v)]
-            # parsed[k] = re.split(pattern, v)
-        else:
-            parsed[k] = v
-
-    return parsed
-
-
 def test_imports(modules, py=None):
     """
     Iterate through test_imports and try and import them
@@ -374,7 +342,7 @@ def load_specs():
                     sys.path.append(extra_path)
                     added_dirs.add(extra_path)
                 else:
-                    logger.warn("Could not add extra path: {0}".format(extra_path))
+                    logger.warn("Skipped adding nonexistant path: {0}".format(extra_path))
 
             sys_sitedirs = getsyssitepackages()
             for sys_sitedir in sys_sitedirs:
