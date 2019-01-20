@@ -1,3 +1,10 @@
+0.7.1
+-----
+Fix for reload(...)
+Fix VEXT_ALLOWED_MODULES environment variable
+Move vext file parsing to its conf module
+
+
 0.7.0
 -----
 Fix for wx.
