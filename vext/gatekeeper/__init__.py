@@ -23,10 +23,15 @@ from contextlib import contextmanager
 from distutils.sysconfig import get_python_lib
 from os.path import isdir, isfile, join, basename, abspath, splitext, relpath
 from vext import registry, logger
+from vext.conf import open_spec
 from vext.env import findsyspy, getsyssitepackages, in_venv
 from vext.helpers import get_extra_path
 
-from vext.conf import open_spec
+try:
+    unicode
+except NameError:
+    # Python 3
+    basestring = unicode = str
 
 log_blocks = 'VEXT_LOG_BLOCKS' in os.environ
 remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
