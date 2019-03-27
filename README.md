@@ -7,9 +7,9 @@ Example using pygame
 ====================
 
 After installing pygame to the system python, install vext.pygame in your virtualenv:
-
-(my-virtualenv) $ pip vext.pygame
-
+```bash
+(my-virtualenv) $ pip install vext.pygame
+```
 
 Available packages
 ==================
