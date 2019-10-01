@@ -53,7 +53,7 @@ def check_sysdeps(vext_files):
                     logger.debug("%s: %s", k, v)
             if not all(result.values()):
                 success = False
-                print(install_hint)
+                sys.stderr(install_hint + "\n")
     return success
 
 
