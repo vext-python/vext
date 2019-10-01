@@ -223,8 +223,13 @@ class GatekeeperFinder(object):
 
     def __init__(self, path_entry):
         self.path_entry = path_entry
-
-        sitedir = getsyssitepackages()
+        try:
+            # Wrap in exception handler in case something in a .pth file causes an exception.
+            sitedir = getsyssitepackages()
+        except Exception as e:
+            sys.stderr.write("Vext disabled:  There was an issue getting the system site packages.\n")
+            raise ImportError()
+        
         if path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
             logger.debug("handle entry %s", path_entry)
             return
