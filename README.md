@@ -31,7 +31,7 @@ These can be installed using pip as long as corresponding package is installed i
   vext.vtk
 
 
-Deprecated Packates
+Deprecated Packages
 ===================
 
 Vext packages get deprecated when the originating project supports installation
