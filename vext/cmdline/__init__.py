@@ -121,10 +121,10 @@ def do_check(vext_files):
     :param: list of vext filenames (without paths), '*' matches all.
     :return: True if test_imports was successful from all files
     """
-    import vext
+    from vext.gatekeeper import spec_files_flat
     # not efficient ... but then there shouldn't be many of these
 
-    all_specs = set(vext.gatekeeper.spec_files_flat())
+    all_specs = set(spec_files_flat())
     if vext_files == ['*']:
         vext_files = all_specs
     unknown_specs = set(vext_files) - all_specs
