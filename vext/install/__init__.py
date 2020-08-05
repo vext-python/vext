@@ -12,13 +12,13 @@ from vext import logger, vext_pth
 
 
 DEFAULT_PTH_CONTENT = """\
-# Attempt to install the vext importer without blowing up everything 
-# if vext was uninstalled in the meantime.
+# Install the vext importer - dont die if vext has been uninstalled.
 #
 # Lines beginning with 'import' are executed, so import sys to get
 # going.
-import sys; exec("try:\\n import vext\\n vext.install_importer()\\nexcept:\\n pass")
+import sys, os; exec("try:\n from vext.gatekeeper import install_importer\n install_importer()\nexcept Exception as e:\n if 'VEXT_DEBUG_LOG' in os.environ:\n  sys.stderr.write(repr(e) + '\\n')")
 """
+
 
 
 def check_sysdeps(vext_files):
@@ -89,8 +89,8 @@ def create_pth():
     :return:
     """
     if prefix == '/usr':
-        print("Not creating PTH in real prefix: %s" % prefix)
+        print("Not creating PTH in real prefix: %s" % prefix, file=sys.stderr)
         return False
-    with open(vext_pth, 'w') as f:
+    with open(vext_pth, 'w+') as f:
         f.write(DEFAULT_PTH_CONTENT)
     return True
