@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 
 from os.path import basename, isdir, join, normpath
