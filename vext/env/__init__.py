@@ -69,13 +69,13 @@ def in_venv():
         _in_venv = True
     else:
         # Find first python in path ... if its not this one,
-        # ...we are in a different python
+        # ...we are in a different python environment
         python = basename(sys.executable)
         for p in os.environ['PATH'].split(os.pathsep):
             py_path = join(p, python)
             if isfile(py_path):
-                logger.debug("in_venv py_at [%s] return: %s", (py_path, sys.executable != py_path))
                 _in_venv = sys.executable != py_path
+                logger.debug("in_venv: [%s], sys.executable is not first python in path [%s]", _in_venv, py_path)
                 break
 
     return _in_venv
