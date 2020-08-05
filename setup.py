@@ -15,14 +15,14 @@ ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
 
 
 MIN_SETUPTOOLS = "18.8"
-os.environ['VEXT_DISABLED'] = '1'   # Don't vext in subprocesses to load, avoiding a memory leak
-version = "0.7.2"
+os.environ['VEXT_DISABLED'] = '1'   # Disable vext loading in subprocesses of setup.py, avoiding memory leak.
+version = "0.7.4"
 
 try:
     reload
 except NameError:
     # python 3
-    from imp import reload
+    from importlib import reload
 
 
 def upgrade_setuptools():
@@ -89,6 +89,7 @@ here = normpath(abspath(dirname(__file__)))
 class BuildWithPTH(build):
     def run(self):
         build.run(self)
+        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
         path = join(here, 'vext_importer.pth')
         dest = join(self.build_lib, basename(path))
         self.copy_file(path, dest)
@@ -105,6 +106,7 @@ class InstallWithPTH(install):
 class EasyInstallWithPTH(easy_install):
     def run(self):
         easy_install.run(self)
+        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
         path = join(here, 'vext_importer.pth')
         dest = join(self.install_dir, basename(path))
         self.copy_file(path, dest)
@@ -113,6 +115,7 @@ class EasyInstallWithPTH(easy_install):
 class DevelopWithPTH(develop):
     def run(self):
         develop.run(self)
+        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
         path = join(here, 'vext_importer.pth')
         dest = join(self.install_dir, basename(path))
         self.copy_file(path, dest)
