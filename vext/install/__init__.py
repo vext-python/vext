@@ -18,7 +18,7 @@ DEFAULT_PTH_CONTENT = """\
 #
 # Lines beginning with 'import' are executed, so import sys to get
 # going.
-import os; import sys; exec("try:\n  from vext.gatekeeper import install_importer;install_importer()\nexcept:sys.stderr.write('An error occured while enabling VEXT'); raise;")
+import os; from vext.gatekeeper import install_importer; install_importer()
 """
 
 
