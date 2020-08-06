@@ -117,7 +117,14 @@ def findsyspy():
         with open(ORIG_PREFIX_TXT) as op:
             prefix = op.read()
     elif HAS_PY_VENV_CFG:
-        prefix = getattr(sys, "_home")
+        prefix = getattr(sys, "_home", None)
+        if prefix is None:
+            # In PipEnv this may be None, so read PY_VENV_CFG ourselves
+            with open(PY_VENV_CFG) as f:
+                for line in f.readlines():
+                    name, _, value = line.partition('=')
+                    if name.strip() == 'base-executable':
+                        return value.strip()
 
     if not prefix:
         return None
