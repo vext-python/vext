@@ -18,7 +18,5 @@ install:
 
 # command to run tests
 script:
-  - which nosetests
   - export VEXT_DEBUG_LOG=1
-  - pushd tests; python -m unittest test-vext-api; popd
-  #- nosetests
+  - pushd tests; python -m unittest test*.py; popd
