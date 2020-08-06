@@ -54,7 +54,9 @@ def in_venv():
     directly, so VIRTUAL_ENV may not be set
     """
     global _in_venv
+    logger.debug("in_venv enter with interpreter %s", sys.executable)
     if _in_venv is not None:
+        logger.debug("in_venv return cached value %s", _in_venv)
         return _in_venv
 
     if not (os.path.isfile(ORIG_PREFIX_TXT) or os.path.isfile(PY_VENV_CFG)):
