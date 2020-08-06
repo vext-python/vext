@@ -9,8 +9,6 @@ python:
 install:
   # older versions of pip won't work
   - sudo apt-get install libyaml-dev -y
-  - echo rm -f $(python -c "import sys; print('/vext_importer.pth'.join(sys.path))")
-  - rm -f $(python -c "import sys; print('/vext_importer.pth'.join(sys.path))")
   - pip install nose
   - pip install -U setuptools pip
   - pip install -r requirements.txt
@@ -20,7 +18,7 @@ install:
 
 # command to run tests
 script:
-  - which nosetests 
+  - which nosetests
   - export VEXT_DEBUG_LOG=1
   - pushd tests; python -m unittest test-vext-api; popd
   #- nosetests

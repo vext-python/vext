@@ -18,7 +18,7 @@ DEFAULT_PTH_CONTENT = """\
 #
 # Lines beginning with 'import' are executed, so import sys to get
 # going.
-import sys, os; exec("try:\n from vext.gatekeeper import install_importer\n install_importer()\nexcept Exception as e:\n if 'VEXT_DEBUG_LOG' in os.environ:\n  sys.stderr.write(repr(e) + '\\n')")
+import os; import sys; exec("try:\n  from vext.gatekeeper import install_importer;install_importer()\nexcept:sys.stderr.write('An error occured while enabling VEXT'); raise;")
 """
 
 

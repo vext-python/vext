@@ -86,40 +86,6 @@ from setuptools.command.install_lib import install_lib
 here = normpath(abspath(dirname(__file__)))
 
 
-class BuildWithPTH(build):
-    def run(self):
-        build.run(self)
-        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.build_lib, basename(path))
-        self.copy_file(path, dest)
-
-
-class InstallWithPTH(install):
-    def run(self):
-        install.run(self)
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_lib, basename(path))
-        self.copy_file(path, dest)
-
-
-class EasyInstallWithPTH(easy_install):
-    def run(self):
-        easy_install.run(self)
-        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_dir, basename(path))
-        self.copy_file(path, dest)
-
-
-class DevelopWithPTH(develop):
-    def run(self):
-        develop.run(self)
-        # TODO -  the content of vext_importer.pth is duplicated in vext.install, there should be only one.
-        path = join(here, 'vext_importer.pth')
-        dest = join(self.install_dir, basename(path))
-        self.copy_file(path, dest)
-
 
 class InstallLib(install_lib):
     #
@@ -313,11 +279,7 @@ class CleanCommand(Command):
 
 setup(
     cmdclass={
-        'build': BuildWithPTH,
-        'easy_install': EasyInstallWithPTH,
-        'install': InstallWithPTH,
         'install_lib': InstallLib,
-        'develop': DevelopWithPTH,
         'clean': CleanCommand,
     },
 
