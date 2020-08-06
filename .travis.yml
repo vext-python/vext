@@ -8,7 +8,9 @@ python:
 # command to install dependencies
 install:
   # older versions of pip won't work
-  - sudo apt-get install libyaml-dev
+  - sudo apt-get install libyaml-dev -y
+  - echo rm -f $(python -c "import sys; print('/vext_importer.pth'.join(sys.path))")
+  - rm -f $(python -c "import sys; print('/vext_importer.pth'.join(sys.path))")
   - pip install nose
   - pip install -U setuptools pip
   - pip install -r requirements.txt
