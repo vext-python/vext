@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Test the python envs, such as virtualenv, venv and PipEnv
-#    Initially verify that modules cannot be imported, 
+#    Initially verify that modules cannot be imported,
 #    then install vext verify they *can* be imported.
+#
 # Prerequisites:
 #    System environment with the correct dependencies installed.
 #
@@ -32,11 +33,18 @@ PIP="${ENV}/bin/pip"
 # vext.gi vext.pygtk vext.pyqt4 vext.pyqt5 vext.wx vext.pygame vext.panda3d vext.vtk vext.libtorrent
 
 # TODO list of modules is not complete.
-declare -a MODULES=(\
- "gi"\
- "libtorrent"\
- "pygame"\
-)
+if /usr/bin/python3 --version | grep -q "Python 3"; then
+ declare -a MODULES=(\
+  "gi"\
+  "libtorrent"\
+  "pygame"\
+ )
+else
+ declare -a MODULES=(\
+  "gi"\
+  "pygame"\
+ )
+fi
 
 declare -a PACKAGES=(\
  "vext.gi"\
