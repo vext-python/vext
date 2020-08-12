@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 
 from os.path import basename, isdir, join, normpath
@@ -11,14 +13,13 @@ from vext.conf import open_spec
 from vext import logger, vext_pth
 
 
-DEFAULT_PTH_CONTENT = """\
-# Attempt to install the vext importer without blowing up everything 
-# if vext was uninstalled in the meantime.
+DEFAULT_PTH_CONTENT = r"""# Install the vext importer - dont die if vext has been uninstalled.
 #
 # Lines beginning with 'import' are executed, so import sys to get
 # going.
-import sys; exec("try:\\n import vext\\n vext.install_importer()\\nexcept:\\n pass")
+import os, sys; exec("if 'VEXT_DISABLED' not in os.environ:\n\ttry:\n\t\tfrom vext.gatekeeper import install_importer; install_importer()\n\texcept:\n\t\tif 'VEXT_DEBUG_LOG' in os.environ:\n\t\t\tsys.write('error installing vext importer hook\\n'); raise")
 """
+
 
 
 def check_sysdeps(vext_files):
@@ -89,8 +90,8 @@ def create_pth():
     :return:
     """
     if prefix == '/usr':
-        print("Not creating PTH in real prefix: %s" % prefix)
+        print("Not creating PTH in real prefix: %s" % prefix, file=sys.stderr)
         return False
-    with open(vext_pth, 'w') as f:
+    with open(vext_pth, 'w+') as f:
         f.write(DEFAULT_PTH_CONTENT)
     return True

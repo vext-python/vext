@@ -1,16 +1,23 @@
+dist: focal
+
 language: python
 python:
   - "2.7"
-  - "3.5"
   - "3.6"
   - "3.7"
-  - "nightly" # currently points to 3.6-dev
+  - "3.8"
+
+addons:
+  apt:
+    packages:
+    - libyaml-dev
+    - python-pygame
+    - python3-pygame
+    - python3-libtorrent
 
 # command to install dependencies
 install:
   # older versions of pip won't work
-  - sudo apt-get install libyaml-dev
-  - pip install nose
   - pip install -U setuptools pip
   - pip install -r requirements.txt
   - pip --version
@@ -19,7 +26,5 @@ install:
 
 # command to run tests
 script:
-  - which nosetests 
-  - export VEXT_DEBUG_LOG=1
-  - pushd tests; python -m unittest test-vext-api; popd
-  #- nosetests
+  # - export VEXT_DEBUG_LOG=1
+  - scripts/test_virtualenv.sh

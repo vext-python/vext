@@ -54,7 +54,9 @@ def in_venv():
     directly, so VIRTUAL_ENV may not be set
     """
     global _in_venv
+    logger.debug("in_venv enter with interpreter %s", sys.executable)
     if _in_venv is not None:
+        logger.debug("in_venv return cached value %s", _in_venv)
         return _in_venv
 
     if not (os.path.isfile(ORIG_PREFIX_TXT) or os.path.isfile(PY_VENV_CFG)):
@@ -69,13 +71,13 @@ def in_venv():
         _in_venv = True
     else:
         # Find first python in path ... if its not this one,
-        # ...we are in a different python
+        # ...we are in a different python environment
         python = basename(sys.executable)
         for p in os.environ['PATH'].split(os.pathsep):
             py_path = join(p, python)
             if isfile(py_path):
-                logger.debug("in_venv py_at [%s] return: %s", (py_path, sys.executable != py_path))
                 _in_venv = sys.executable != py_path
+                logger.debug("in_venv: [%s], sys.executable is not first python in path [%s]", _in_venv, py_path)
                 break
 
     return _in_venv
@@ -115,7 +117,14 @@ def findsyspy():
         with open(ORIG_PREFIX_TXT) as op:
             prefix = op.read()
     elif HAS_PY_VENV_CFG:
-        prefix = getattr(sys, "_home")
+        prefix = getattr(sys, "_home", None)
+        if prefix is None:
+            # In PipEnv this may be None, so read PY_VENV_CFG ourselves
+            with open(PY_VENV_CFG) as f:
+                for line in f.readlines():
+                    name, _, value = line.partition('=')
+                    if name.strip() == 'base-executable':
+                        return value.strip()
 
     if not prefix:
         return None

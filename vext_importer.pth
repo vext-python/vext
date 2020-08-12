@@ -1,5 +1,0 @@
-# Install the vext importer - dont die if vext has been uninstalled.
-# 
-# Lines beginning with 'import' are executed, so import sys to get
-# going.
-import sys; exec("try:\n import vext\n vext.install_importer()\nexcept:\n pass")
