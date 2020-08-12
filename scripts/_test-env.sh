@@ -35,7 +35,7 @@ ERR=0
 # vext.gi vext.pygtk vext.pyqt4 vext.pyqt5 vext.wx vext.pygame vext.panda3d vext.vtk vext.libtorrent
 
 # TODO list of modules is not complete.
-if /usr/bin/python3 --version | grep -q "Python 3"; then
+if $(which python)  --version | grep -q "Python 3"; then
  declare -a MODULES=(\
   "gi"\
   "libtorrent"\
