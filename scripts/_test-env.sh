@@ -29,6 +29,7 @@ PYTHON="${ENV}/bin/python"
 VEXT="${ENV}/bin/vext"
 PIP="${ENV}/bin/pip"
 
+
 # Full list of vext packages:
 # vext.gi vext.pygtk vext.pyqt4 vext.pyqt5 vext.wx vext.pygame vext.panda3d vext.vtk vext.libtorrent
 
@@ -123,10 +124,6 @@ function run_unittests() {
   popd
   exit $?
 }
-
-if [ "${CI:-default}" == "true" ]; then
-  set -x
-fi
 
 # Sanity check initial environment:
 test_modules_cannot_be_imported

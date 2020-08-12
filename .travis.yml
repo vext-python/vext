@@ -26,5 +26,5 @@ install:
 
 # command to run tests
 script:
-  - export VEXT_DEBUG_LOG=1
+  # - export VEXT_DEBUG_LOG=1
   - scripts/test_virtualenv.sh
