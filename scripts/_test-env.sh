@@ -119,8 +119,12 @@ function test_vext_module_check() {
 
 
 function run_unittests() {
+  # python2 doesn't like '$ python -munittest *.py' as it dies on the .py
   pushd $PROJECT_DIR/tests
-  for f in *.py; do python -munittest "${f%.py}" ; done
+  for f in *.py; do
+    echo python -munittest "${f%.py}" 
+    python -munittest "${f%.py}" 
+  done
   popd
   exit $?
 }
