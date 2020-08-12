@@ -29,6 +29,7 @@ PYTHON="${ENV}/bin/python"
 VEXT="${ENV}/bin/vext"
 PIP="${ENV}/bin/pip"
 
+ERR=0
 
 # Full list of vext packages:
 # vext.gi vext.pygtk vext.pyqt4 vext.pyqt5 vext.wx vext.pygame vext.panda3d vext.vtk vext.libtorrent
@@ -73,7 +74,6 @@ function test_modules_cannot_be_imported() {
   # When the environment has been setup initially, but nothing
   # has been installed imports should fail.
   echo "Initial environment: modules should not be importable."
-  export ERR=0
   for module in "${MODULES[@]}" ; do
     if "$PYTHON" -c "import $module" 2&> /dev/null; then
       echo "Test initial setup cannot import $module (fail)"
@@ -89,7 +89,6 @@ function test_modules_can_be_imported() {
   # vext and it's modules are installed, imports should
   # succeed.
   echo "Inside python env: modules should be importable."
-  export ERR=0
   for module in "${MODULES[@]}" ; do
     echo "$PYTHON" -c "import $module"
     if "$PYTHON" -c "import $module"; then
@@ -106,7 +105,6 @@ function test_vext_module_check() {
   # vext and it's modules are installed, vexts own
   # import check should pass.
   echo "Vext module check."
-  export ERR=0
   for module in "${MODULES[@]}" ; do
     if ! $VEXT -c $module.vext 2&> /dev/null; then
       echo "Test vext $module installed (pass)"
