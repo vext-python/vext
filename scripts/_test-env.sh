@@ -118,8 +118,9 @@ function test_vext_module_check() {
 
 
 function run_unittests() {
-  cd $PROJECT_DIR/tests
-  python -munittest test*.py
+  pushd $PROJECT_DIR/tests
+  for f in *.py; do python -munittest "${f%.py}" ; done
+  popd
   exit $?
 }
 
