@@ -12,13 +12,13 @@ addons:
     packages:
     - libyaml-dev
     - python-pygame
-    - python-libtorrent
     - python3-pygame
     - python3-libtorrent
 
 # command to install dependencies
 install:
   # older versions of pip won't work
+  - pip install python-libtorrent-bin
   - pip install -U setuptools pip
   - pip install -r requirements.txt
   - pip --version
