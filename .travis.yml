@@ -19,7 +19,6 @@ addons:
 # command to install dependencies
 install:
   # older versions of pip won't work
-  - pip install nose
   - pip install -U setuptools pip
   - pip install -r requirements.txt
   - pip --version
