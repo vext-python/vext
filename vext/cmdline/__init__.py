@@ -162,8 +162,8 @@ def main():
 
     parser = argparse.ArgumentParser(description='Access system python modules from virtualenv.')
     parser.add_argument('-l', '--list', dest='list', action='store_true', help='List installed external packages')
-    parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Disable Vext loader')
-    parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Enable Vext loader')
+    parser.add_argument('-e', '--enable', dest='enable', action='store_true', help='Enable Vext loader')
+    parser.add_argument('-d', '--disable', dest='disable', action='store_true', help='Disable Vext loader')
     parser.add_argument('-s', '--status', dest='status', action='store_true', help='Show Vext status')
     parser.add_argument('-c', '--check', dest='check', nargs='*',
                         help='[external package] Test imports for external package')
