@@ -190,8 +190,8 @@ optional arguments:
   -e, --enable   Disable Vext loader
   -d, --disable  Enable Vext loader
   -s, --status   Show Vext status
-  -c CHECK, --check CHECK
-                        [external package] Test imports for external package
+  -c CHECK, --check CHECK [external package] Test imports for external package
+  -i [filename.vext [filename.vext ...]], --install [INSTALL [INSTALL ...]]  Install vext file.
 ```
 
 If Vext is causing an issue with other tools try disabling it,
