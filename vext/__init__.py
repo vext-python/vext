@@ -13,6 +13,7 @@ if VEXT_DEBUG_LOG in environ and environ.get(VEXT_DEBUG_LOG, "0") == "1":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
 else:
+    logger.setLevel(logging.ERROR) # don't output warnings unless debugging is enabled
     logger.addHandler(logging.NullHandler())
 
 
