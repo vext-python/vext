@@ -16,7 +16,7 @@ ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
 
 MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Disable vext loading in subprocesses of setup.py, avoiding memory leak.
-version = "0.7.4"
+version = "0.7.5"
 
 try:
     reload
