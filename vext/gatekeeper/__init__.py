@@ -184,7 +184,7 @@ class GateKeeperLoader(object):
     def load_module(self, name):
         """
         Only lets modules in allowed_modules be loaded, others
-        will get an ImportError
+        will get a ModuleNotFoundError (a type of ImportError)
         """
 
         # Get the name relative to SITEDIR ..
@@ -198,10 +198,10 @@ class GateKeeperLoader(object):
             if remember_blocks:
                 blocked_imports.add(fullname)
             if log_blocks:
-                raise ImportError("Vext blocked import of '%s'" % modulename)
+                raise ModuleNotFoundError("Vext blocked import of '%s'" % modulename)
             else:
                 # Standard error message
-                raise ImportError("No module named %s" % modulename)
+                raise ModuleNotFoundError("No module named %s" % modulename)
 
         if name not in sys.modules:
             try:
@@ -229,7 +229,7 @@ class GatekeeperFinder(object):
         except Exception as e:
             sys.stderr.write("Vext disabled:  There was an issue getting the system site packages.\n")
             raise ImportError()
-        
+
         if path_entry in (sitedir, GatekeeperFinder.PATH_TRIGGER):
             logger.debug("handle entry %s", path_entry)
             return

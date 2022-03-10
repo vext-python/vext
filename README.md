@@ -228,8 +228,8 @@ them to a local data structure.
 
 Logging Blocked Imports
 -----------------------
-To see which modules Vext is blocking set VEXT_LOG_BLOCKS instead of
-standard ImportErrors, you will get ones like this:
+To see which modules Vext is blocking set VEXT_LOG_BLOCKS. Instead of
+standard ModuleNotFoundErrors, you will get ones like this:
 
 
 ```bash
@@ -237,7 +237,7 @@ $ VEXT_LOG_BLOCKS=1
 ```
 ```python
 >>> import pyaudio
-ImportError("Vext blocked import of pyaudio")
+ModuleNotFoundError("Vext blocked import of pyaudio")
 ```
 
 Remembering Blocked Imports
@@ -252,7 +252,7 @@ vext.remember_blocks to True:
 >>> vext.blocked_imports
 set([])
 >>> import pygtk
-ImportError:
+ModuleNotFoundError:
 >>> vext.blocked_imports
 set(["pygtk"])
 ```
@@ -281,4 +281,3 @@ Thanks
 ruamel/venvgtk - for showing something like this is possible
 
 pymotw article on modules and imports
-
