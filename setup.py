@@ -329,6 +329,7 @@ setup(
         'vext.install',
     ],
 
+    python_requires=">=3.6",
     setup_requires=["setuptools>=18.0.1", "pip>=1.5.6"],
     install_requires=["ruamel.yaml>=0.11.10"],
 
