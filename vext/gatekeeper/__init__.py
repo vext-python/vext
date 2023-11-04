@@ -19,8 +19,8 @@ import os
 import re
 import site
 import sys
+import sysconfig
 from contextlib import contextmanager
-from distutils.sysconfig import get_python_lib
 from os.path import isdir, isfile, join, basename, abspath, splitext, relpath
 from vext import registry, logger
 from vext.conf import open_spec
@@ -68,7 +68,7 @@ def fix_path(p):
     >>> fix_path('C:\\some-venv\\Lib\\site-packages\\gnome')
     'C:\\Python27\\lib\\site-packages\\gnome'
     """
-    venv_lib = get_python_lib()
+    venv_lib = sysconfig.get_path('purelib')
 
     if p.startswith(venv_lib):
         subdir = p[len(venv_lib) + 1:]
