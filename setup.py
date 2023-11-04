@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import logging
 import os
 import pkg_resources
@@ -7,77 +5,19 @@ import subprocess
 import sys
 import traceback
 
-from distutils.version import StrictVersion
-from pkg_resources import DistributionNotFound
 from vext import logger
 
-ignore_reload_errors = "VEXT_RELOAD_HACK" in os.environ
-
-
-MIN_SETUPTOOLS = "18.8"
 os.environ['VEXT_DISABLED'] = '1'   # Disable vext loading in subprocesses of setup.py, avoiding memory leak.
 version = "0.7.6"
-
-try:
-    reload
-except NameError:
-    # python 3
-    from importlib import reload
-
-
-def upgrade_setuptools():
-    """
-    setuptools 12.2 can trigger a really nasty bug
-    that eats all memory, so upgrade it to
-    18.8, which is known to be good.
-    """
-    # Note - I tried including the higher version in
-    # setup_requires, but was still able to trigger
-    # the bug. - stu.axon
-    global MIN_SETUPTOOLS
-    r = None
-    try:
-        r = pkg_resources.require(["setuptools"])[0]
-    except DistributionNotFound:
-        # ok, setuptools will be installed later
-        return
-
-    if StrictVersion(r.version) >= StrictVersion(MIN_SETUPTOOLS):
-        return
-    else:
-        print("Upgrading setuptools...")
-        subprocess.call("%s -mpip install 'setuptools>=%s'" % (sys.executable, MIN_SETUPTOOLS), shell=True)
-
-
-def do_reload(module):
-    if ignore_reload_errors:
-        try:
-            reload(pkg_resources)
-        except Exception as e:
-            # Horrible hack to workaround travis problem
-            print("VEXT_RELOAD_HACK set, ignoring %s" % e)
-    else:
-        reload(pkg_resources)
-
-if "install" in sys.argv:
-    upgrade_setuptools()
-    do_reload(pkg_resources)
-    try:
-        r = pkg_resources.require(["setuptools"])[0]
-        print("setuptools version: %s" % r.version)
-    except DistributionNotFound:
-        # ok, setuptools will be installed later
-        print("setuptools not found.")
-        sys.exit(1)
 
 from glob import glob
 from os.path import abspath, basename, dirname, join, normpath, relpath
 from shutil import rmtree
 from textwrap import dedent
 
-from distutils.command.build import build
 from setuptools import setup
 from setuptools import Command
+from setuptools.command.build import build
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.easy_install import easy_install
@@ -314,7 +254,6 @@ setup(
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
     ],
     keywords='setuptools development',
@@ -330,7 +269,7 @@ setup(
     ],
 
     python_requires=">=3.6",
-    setup_requires=["setuptools>=18.0.1", "pip>=1.5.6"],
+    setup_requires=["setuptools>=18.8", "pip>=1.5.6"],
     install_requires=["ruamel.yaml>=0.11.10"],
 
     # Install the import hook
