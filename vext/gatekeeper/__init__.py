@@ -33,6 +33,11 @@ except NameError:
     # Python 3
     basestring = unicode = str
 
+try:
+    from importlib.util import spec_from_loader
+except:
+    spec_from_loader = None
+
 log_blocks = 'VEXT_LOG_BLOCKS' in os.environ
 remember_blocks = 'VEXT_REMEMBER_BLOCKS' in os.environ
 blocked_imports = registry.blocked_imports  # if remember_blocks is True blocked imports are added here
@@ -276,6 +281,10 @@ class GatekeeperFinder(object):
                 # something is subtly weird here.
                 return
 
+    def find_spec(self, fullname, path, target=None):
+        if fullname in sys.modules:
+            return spec_from_loader(fullname, self)
+        return None
 
 def init_path():
     """
