@@ -1,11 +1,11 @@
 import logging
 
+import sysconfig
 from os import environ
 from os.path import join
-from distutils.sysconfig import get_python_lib
 
 VEXT_DEBUG_LOG = "VEXT_DEBUG_LOG"
-vext_pth = join(get_python_lib(), 'vext_importer.pth')
+vext_pth = join(sysconfig.get_path('purelib'), 'vext_importer.pth')
 
 logger = logging.getLogger("vext")
 if VEXT_DEBUG_LOG in environ and environ.get(VEXT_DEBUG_LOG, "0") == "1":
