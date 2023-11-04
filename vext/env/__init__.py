@@ -6,7 +6,7 @@ import inspect
 import os
 import subprocess
 import sys
-from distutils.sysconfig import get_python_lib
+import sysconfig
 from genericpath import isfile
 from os.path import basename, join, normcase, normpath, realpath
 from textwrap import dedent
@@ -90,7 +90,7 @@ def getsyssitepackages():
     global _syssitepackages
     if not _syssitepackages:
         if not in_venv():
-            _syssitepackages = get_python_lib()
+            _syssitepackages = sysconfig.get_path('purelib')
             return _syssitepackages
 
         @run_in_syspy
@@ -140,8 +140,8 @@ def findsyspy():
         return join(prefix, "bin", python)
 
 
-ORIG_PREFIX_TXT = normpath(join(get_python_lib(), '..', 'orig-prefix.txt'))
-PY_VENV_CFG = normpath(join(get_python_lib(), '..', '..', '..', 'pyvenv.cfg'))
+ORIG_PREFIX_TXT = normpath(join(sysconfig.get_path('purelib'), '..', 'orig-prefix.txt'))
+PY_VENV_CFG = normpath(join(sysconfig.get_path('purelib'), '..', '..', '..', 'pyvenv.cfg'))
 
 HAS_ORIG_PREFIX_TXT = os.path.isfile(ORIG_PREFIX_TXT)
 HAS_PY_VENV_CFG = os.path.isfile(PY_VENV_CFG)
