@@ -19,7 +19,7 @@ def open_spec(f):
     import ruamel.yaml as yaml
 
     keys = ['modules', 'pths', 'test_import', 'install_hints', 'extra_paths']
-    data = yaml.safe_load(f)
+    data = yaml.YAML(typ='safe', pure=True).load(f)
     parsed = dict()
     ## pattern = re.compile("^\s+|\s*,\s*|\s+$")
     for k in keys:
